@@ -516,9 +516,9 @@ ArmorSwapLoop()
         ArmorSwapCount := ArmorSwapCount + 1
         ArmorSwapElemType := 2
     }
-    Else If ( PixelSearch(&AS_Px, &AS_Py, AS_MX, AS_Y, AS_X, AS_Y, 0xFFFF29, ArmorSwapDetectionVariation ) ) ; yellow color.
+    Else If ( PixelSearch(&AS_Px, &AS_Py, AS_MX, AS_Y, AS_X, AS_Y, 0xDADA2B, ArmorSwapDetectionVariation ) ) ; yellow color.
     {
-        MProgress_AS.Opt("+c0xFFFF29")
+        MProgress_AS.Opt("+c0xDADA2B")
         AS_Gui.Title := "AS LIGHTNING"
         MProgress_AS.Value := 22 + (ArmorSwapCount / ArmorSwapTrigThresh) * (100-42)
         ArmorSwapCount := ArmorSwapCount + 1
