@@ -502,49 +502,49 @@ ArmorSwapLoop()
     global
     If ( PixelSearch(&AS_Px, &AS_Py, AS_MX, AS_Y, AS_X, AS_Y, 0xFE7878, ArmorSwapDetectionVariation ) ) ; dull red color.
     {
-        MProgress_AS.Value := 22
         MProgress_AS.Opt("+c0xFE7878")
         AS_Gui.Title := "AS FIRE"
+        MProgress_AS.Value := 22 + (ArmorSwapCount / ArmorSwapTrigThresh) * (100-42)
         ArmorSwapCount := ArmorSwapCount + 1
         ArmorSwapElemType := 1
     }
     Else If ( PixelSearch(&AS_Px, &AS_Py, AS_MX, AS_Y, AS_X, AS_Y, 0x7272FF, ArmorSwapDetectionVariation ) ) ; deep blue color.
     {
-        MProgress_AS.Value := 22
         MProgress_AS.Opt("+c0x7272FF")
         AS_Gui.Title := "AS ICE"
+        MProgress_AS.Value := 22 + (ArmorSwapCount / ArmorSwapTrigThresh) * (100-42)
         ArmorSwapCount := ArmorSwapCount + 1
         ArmorSwapElemType := 2
     }
     Else If ( PixelSearch(&AS_Px, &AS_Py, AS_MX, AS_Y, AS_X, AS_Y, 0xFFFF29, ArmorSwapDetectionVariation ) ) ; yellow color.
     {
-        MProgress_AS.Value := 22
         MProgress_AS.Opt("+c0xFFFF29")
         AS_Gui.Title := "AS LIGHTNING"
+        MProgress_AS.Value := 22 + (ArmorSwapCount / ArmorSwapTrigThresh) * (100-42)
         ArmorSwapCount := ArmorSwapCount + 1
         ArmorSwapElemType := 3
     }
     Else If ( PixelSearch(&AS_Px, &AS_Py, AS_MX, AS_Y, AS_X, AS_Y, 0xFF8000, ArmorSwapDetectionVariation ) ) ; burnt orange color.
     {
-        MProgress_AS.Value := 22
         MProgress_AS.Opt("+c0xFF8000")
         AS_Gui.Title := "AS GROUND"
+        MProgress_AS.Value := 22 + (ArmorSwapCount / ArmorSwapTrigThresh) * (100-42)
         ArmorSwapCount := ArmorSwapCount + 1
         ArmorSwapElemType := 4
     }
     Else If ( PixelSearch(&AS_Px, &AS_Py, AS_MX, AS_Y, AS_X, AS_Y, 0x653865, ArmorSwapDetectionVariation ) ) ; bright purple color.
     {
-        MProgress_AS.Value := 22
         MProgress_AS.Opt("+c0x653865")
         AS_Gui.Title := "AS DARK"
+        MProgress_AS.Value := 22 + (ArmorSwapCount / ArmorSwapTrigThresh) * (100-42)
         ArmorSwapCount := ArmorSwapCount + 1
         ArmorSwapElemType := 5
     }
     Else If ( PixelSearch(&AS_Px, &AS_Py, AS_MX, AS_Y, AS_X, AS_Y, 0xFFC7AD, ArmorSwapDetectionVariation ) ) ; beige color.
     {
-        MProgress_AS.Value := 22
         MProgress_AS.Opt("+c0xFFC7AD")
         AS_Gui.Title := "AS LIGHT"
+        MProgress_AS.Value := 22 + (ArmorSwapCount / ArmorSwapTrigThresh) * (100-42)
         ArmorSwapCount := ArmorSwapCount + 1
         ArmorSwapElemType := 6
     }
@@ -617,6 +617,7 @@ ArmorSwapUse(*)
         
         Send ArmorSwapPressKey
         ArmorSwapLastElemType := ArmorSwapElemType
+        MProgress_AS.Value := 100
     }
         ArmorSwapCount := 0
 }
