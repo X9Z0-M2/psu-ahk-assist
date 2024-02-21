@@ -1300,7 +1300,7 @@ ASGC_ElemFirePressKeyChanged(*)
     If (StrLen(MHotkey_ASPressKeyElemFire.Value) > 0)
     {
         ASV.PressKey[1] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemFire.Value)
-    }    
+    }
 }
 ASGC_ElemIcePressKeyChanged(*)
 {
@@ -1308,7 +1308,7 @@ ASGC_ElemIcePressKeyChanged(*)
     If (StrLen(MHotkey_ASPressKeyElemIce.Value) > 0)
     {
         ASV.PressKey[2] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemIce.Value)
-    }    
+    }
 }
 ASGC_ElemLightningPressKeyChanged(*)
 {
@@ -1316,7 +1316,7 @@ ASGC_ElemLightningPressKeyChanged(*)
     If (StrLen(MHotkey_ASPressKeyElemLightning.Value) > 0)
     {
         ASV.PressKey[3] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLightning.Value)
-    }    
+    }
 }
 ASGC_ElemGroundPressKeyChanged(*)
 {
@@ -1324,7 +1324,7 @@ ASGC_ElemGroundPressKeyChanged(*)
     If (StrLen(MHotkey_ASPressKeyElemGround.Value) > 0)
     {
         ASV.PressKey[4] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemGround.Value)
-    }    
+    }
 }
 ASGC_ElemDarkPressKeyChanged(*)
 {
@@ -1332,7 +1332,7 @@ ASGC_ElemDarkPressKeyChanged(*)
     If (StrLen(MHotkey_ASPressKeyElemDark.Value) > 0)
     {
         ASV.PressKey[5] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemDark.Value)
-    }    
+    }
 }
 ASGC_ElemLightPressKeyChanged(*)
 {
@@ -1340,56 +1340,56 @@ ASGC_ElemLightPressKeyChanged(*)
     If (StrLen(MHotkey_ASPressKeyElemLight.Value) > 0)
     {
         ASV.PressKey[6] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLight.Value)
-    }    
+    }
 }
 
 ASGC_ElemFireTypeInputChanged(*)
 {
     global
-    If (StrLen(MHotkey_ASPressKeyElemFire.Value) > 0)
+    If (StrLen(MText_ASTypeInputElemFire.Value) > 0)
     {
-        ASV.PressKey[1] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemFire.Value)
-    }    
+        ASV.TypeText[1] := MText_ASTypeInputElemFire.Value
+    }
 }
 ASGC_ElemIceTypeInputChanged(*)
 {
     global
-    If (StrLen(MHotkey_ASPressKeyElemIce.Value) > 0)
+    If (StrLen(MText_ASTypeInputElemIce.Value) > 0)
     {
-        ASV.PressKey[2] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemIce.Value)
-    }    
+        ASV.TypeText[2] := MText_ASTypeInputElemIce.Value
+    }
 }
 ASGC_ElemLightningTypeInputChanged(*)
 {
     global
-    If (StrLen(MHotkey_ASPressKeyElemLightning.Value) > 0)
+    If (StrLen(MText_ASTypeInputElemLightning.Value) > 0)
     {
-        ASV.PressKey[3] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLightning.Value)
-    }    
+        ASV.TypeText[3] := MText_ASTypeInputElemLightning.Value
+    }
 }
 ASGC_ElemGroundTypeInputChanged(*)
 {
     global
-    If (StrLen(MHotkey_ASPressKeyElemGround.Value) > 0)
+    If (StrLen(MText_ASTypeInputElemGround.Value) > 0)
     {
-        ASV.PressKey[4] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemGround.Value)
-    }    
+        ASV.TypeText[4] := MText_ASTypeInputElemGround.Value
+    }
 }
 ASGC_ElemDarkTypeInputChanged(*)
 {
     global
-    If (StrLen(MHotkey_ASPressKeyElemDark.Value) > 0)
+    If (StrLen(MText_ASTypeInputElemDark.Value) > 0)
     {
-        ASV.PressKey[5] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemDark.Value)
-    }    
+        ASV.TypeText[5] := MText_ASTypeInputElemDark.Value
+    }
 }
 ASGC_ElemLightTypeInputChanged(*)
 {
     global
-    If (StrLen(MHotkey_ASPressKeyElemLight.Value) > 0)
+    If (StrLen(MText_ASTypeInputElemLight.Value) > 0)
     {
-        ASV.PressKey[6] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLight.Value)
-    }    
+        ASV.TypeText[6] := MText_ASTypeInputElemLight.Value
+    }
 }
 
 ArmorSwapColorElemFireUpdate()
