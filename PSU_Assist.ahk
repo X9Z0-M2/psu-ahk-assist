@@ -101,6 +101,7 @@ ASV.LastElemForCount := ASV.ElemType
 ASV.Color := []
 ASV.HotKey := []
 ASV.PressKey := []
+ASV.TypeText := []
 ASV.TitleText := []
 ASV.ColorLookup :=    Map("Fire",1, "Ice",2, "Lightning",3, "Ground",4, "Dark",5, "Light",6)
 ASV.ColorRevLookup := Map(1,"Fire", 2,"Ice", 3,"Lightning", 4,"Ground", 5,"Dark", 6,"Light")
@@ -116,6 +117,12 @@ ASV.HotKey.InsertAt( ASV.ColorLookup["Lightning"], "+F3" )
 ASV.HotKey.InsertAt( ASV.ColorLookup["Ground"],    "+F4" )
 ASV.HotKey.InsertAt( ASV.ColorLookup["Dark"],      "+F5" )
 ASV.HotKey.InsertAt( ASV.ColorLookup["Light"],     "+F6" )
+ASV.TypeText.InsertAt( ASV.ColorLookup["Fire"],      "/sl f" )
+ASV.TypeText.InsertAt( ASV.ColorLookup["Ice"],       "/sl i" )
+ASV.TypeText.InsertAt( ASV.ColorLookup["Lightning"], "/sl t" )
+ASV.TypeText.InsertAt( ASV.ColorLookup["Ground"],    "/sl e" )
+ASV.TypeText.InsertAt( ASV.ColorLookup["Dark"],      "/sl l" )
+ASV.TypeText.InsertAt( ASV.ColorLookup["Light"],     "/sl d" )
 ASV.TitleText.InsertAt( ASV.ColorLookup["Fire"],      "AS FIRE" )
 ASV.TitleText.InsertAt( ASV.ColorLookup["Ice"],       "AS ICE" )
 ASV.TitleText.InsertAt( ASV.ColorLookup["Lightning"], "AS LIGHTNING" )
@@ -126,6 +133,7 @@ Loop 6
 {
     ASV.PressKey.InsertAt( A_Index, ConvertHotKeyToKeyPress(ASV.HotKey[A_Index]) )
 }
+ASV.InputMode := 1 ; 1= hotkey based, 2= string literal input
 ASV.CurDetectColorIdx := 1
 ASV.DetectionState := 0 ; 0=new search, 1=recheck find
 ASV.NewDetectTries := 2
@@ -367,24 +375,79 @@ MUpDown_ASHorz := Menu_Gui.Add("UpDown", "Y+6 XS35 W45 vASVHorzUpDown Horz Range
 MUpDown_ASHorz.OnEvent("Change", ASGC_HorzChanged)
 
 MTab_Settings.UseTab(5)
-Menu_Gui.Add("Text", , "FIRE")
-MHotkey_ASPressKeyElemFire := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemFireHotkey", ASV.HotKey[1])
+Menu_Gui.Add("Text", , "Input Mode")
+MDDList_ASPressKeyInputMode := Menu_Gui.Add("DropDownList", "w75 Choose" . ASV.InputMode, ["HotKey","TypeText"])
+MDDList_ASPressKeyInputMode.OnEvent("Change", ASGC_PressKeyInputModeChanged)
+Menu_Gui.Add("Text", "Section", "FIRE")
+MHotkey_ASPressKeyElemFire := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemFireHotkey", ASV.HotKey[1])
 MHotkey_ASPressKeyElemFire.OnEvent("Change", ASGC_ElemFirePressKeyChanged)
-Menu_Gui.Add("Text", , "ICE")
-MHotkey_ASPressKeyElemIce := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemIceHotkey", ASV.HotKey[2])
+MText_ASTypeInputElemFire := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemFireText", ASV.TypeText[1])
+MText_ASTypeInputElemFire.OnEvent("Change", ASGC_ElemFireTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "ICE")
+MHotkey_ASPressKeyElemIce := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemIceHotkey", ASV.HotKey[2])
 MHotkey_ASPressKeyElemIce.OnEvent("Change", ASGC_ElemIcePressKeyChanged)
-Menu_Gui.Add("Text", , "LIGHTNING")
-MHotkey_ASPressKeyElemLightning := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemLightningHotkey", ASV.HotKey[3])
+MText_ASTypeInputElemIce := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemIceText", ASV.TypeText[2])
+MText_ASTypeInputElemIce.OnEvent("Change", ASGC_ElemIceTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "LIGHTNING")
+MHotkey_ASPressKeyElemLightning := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemLightningHotkey", ASV.HotKey[3])
 MHotkey_ASPressKeyElemLightning.OnEvent("Change", ASGC_ElemLightningPressKeyChanged)
-Menu_Gui.Add("Text", , "GROUND")
-MHotkey_ASPressKeyElemGround := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemGroundHotkey", ASV.HotKey[4])
+MText_ASTypeInputElemLightning := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemLightningText", ASV.TypeText[3])
+MText_ASTypeInputElemLightning.OnEvent("Change", ASGC_ElemLightningTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "GROUND")
+MHotkey_ASPressKeyElemGround := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemGroundHotkey", ASV.HotKey[4])
 MHotkey_ASPressKeyElemGround.OnEvent("Change", ASGC_ElemGroundPressKeyChanged)
-Menu_Gui.Add("Text", , "DARK")
-MHotkey_ASPressKeyElemDark := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemDarkHotkey", ASV.HotKey[5])
+MText_ASTypeInputElemGround := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemGroundText", ASV.TypeText[4])
+MText_ASTypeInputElemGround.OnEvent("Change", ASGC_ElemGroundTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "DARK")
+MHotkey_ASPressKeyElemDark := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemDarkHotkey", ASV.HotKey[5])
 MHotkey_ASPressKeyElemDark.OnEvent("Change", ASGC_ElemDarkPressKeyChanged)
-Menu_Gui.Add("Text", , "LIGHT")
-MHotkey_ASPressKeyElemLight := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemLightHotkey", ASV.HotKey[6])
+MText_ASTypeInputElemDark := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemDarkText", ASV.TypeText[5])
+MText_ASTypeInputElemDark.OnEvent("Change", ASGC_ElemDarkTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "LIGHT")
+MHotkey_ASPressKeyElemLight := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemLightHotkey", ASV.HotKey[6])
 MHotkey_ASPressKeyElemLight.OnEvent("Change", ASGC_ElemLightPressKeyChanged)
+MText_ASTypeInputElemLight := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemLightText", ASV.TypeText[6])
+MText_ASTypeInputElemLight.OnEvent("Change", ASGC_ElemLightTypeInputChanged)
+        
+ASGC_PressKeyInputModeChanged()
+ASGC_PressKeyInputModeChanged(*)
+{
+    global
+    If (MDDList_ASPressKeyInputMode.Value = 1)
+    {
+        MText_ASTypeInputElemFire.Visible := false
+        MText_ASTypeInputElemIce.Visible := false
+        MText_ASTypeInputElemLightning.Visible := false
+        MText_ASTypeInputElemGround.Visible := false
+        MText_ASTypeInputElemDark.Visible := false
+        MText_ASTypeInputElemLight.Visible := false
+        
+        MHotkey_ASPressKeyElemFire.Visible := true
+        MHotkey_ASPressKeyElemIce.Visible := true
+        MHotkey_ASPressKeyElemLightning.Visible := true
+        MHotkey_ASPressKeyElemGround.Visible := true
+        MHotkey_ASPressKeyElemDark.Visible := true
+        MHotkey_ASPressKeyElemLight.Visible := true
+        ASV.InputMode := 1
+    }
+    Else If (MDDList_ASPressKeyInputMode.Value = 2)
+    {
+        MHotkey_ASPressKeyElemFire.Visible := false
+        MHotkey_ASPressKeyElemIce.Visible := false
+        MHotkey_ASPressKeyElemLightning.Visible := false
+        MHotkey_ASPressKeyElemGround.Visible := false
+        MHotkey_ASPressKeyElemDark.Visible := false
+        MHotkey_ASPressKeyElemLight.Visible := false
+
+        MText_ASTypeInputElemFire.Visible := true
+        MText_ASTypeInputElemIce.Visible := true
+        MText_ASTypeInputElemLightning.Visible := true
+        MText_ASTypeInputElemGround.Visible := true
+        MText_ASTypeInputElemDark.Visible := true
+        MText_ASTypeInputElemLight.Visible := true
+        ASV.InputMode := 2
+    }
+}
 
 MTab_Settings.UseTab(6)
 Menu_Gui.Add("Text", , "Detect Variation 0-255")
@@ -852,38 +915,32 @@ ArmorSwapUse(*)
         Sleep ASV.Delay
         ToolTip "Armor Swap!"
         SetTimer () => ToolTip(), -1900, 10000
-        If (ASV.ElemType = 1)
-        {
-            ArmorSwapPressKey := ASV.PressKey[1]
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[1]))
-        } Else If (ASV.ElemType = 2)
-        {
-            ArmorSwapPressKey := ASV.PressKey[2]
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[2]))
-        } Else If (ASV.ElemType = 3)
-        {
-            ArmorSwapPressKey := ASV.PressKey[3]
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[3]))
-        } Else If (ASV.ElemType = 4)
-        {
-            ArmorSwapPressKey := ASV.PressKey[4]
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[4]))
-        } Else If (ASV.ElemType = 5)
-        {
-            ArmorSwapPressKey := ASV.PressKey[5]
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[5]))
-        } Else If (ASV.ElemType = 6)
-        {
-            ArmorSwapPressKey := ASV.PressKey[6]
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[6]))
-        }
         
-        Send ArmorSwapPressKey
-        ASV.LastElemType := ASV.ElemType
-        MProgress_AS.Value := 100
-        ASV.CanChange := 0
-        SetTimer () => ASV.CanChange := 1, -ASV.DurationBeforeNextChange, 10001
-        ; ASV.Count := 0
+        local ArmorSwapPressInputted := false
+        If (ASV.InputMode = 1)
+        {
+            ArmorSwapPressInput := ASV.PressKey[ASV.ElemType]
+            Send ArmorSwapPressInput
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[ASV.ElemType]))
+            ArmorSwapPressInputted := true
+        }
+        Else If (ASV.InputMode = 2)
+        {
+            ArmorSwapPressInput := ASV.TypeText[ASV.ElemType]
+            Send "{Space}"
+            Send "{Text}" . ArmorSwapPressInput
+            Send "{Enter}"
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[ASV.ElemType]))
+            ArmorSwapPressInputted := true
+        }
+        If (ArmorSwapPressInputted = true)
+        {
+            ASV.LastElemType := ASV.ElemType
+            MProgress_AS.Value := 100
+            ASV.CanChange := 0
+            SetTimer () => ASV.CanChange := 1, -ASV.DurationBeforeNextChange, 10001
+            ; ASV.Count := 0
+        }
     }
 }
 
@@ -1285,6 +1342,56 @@ ASGC_ElemLightPressKeyChanged(*)
         ASV.PressKey[6] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLight.Value)
     }    
 }
+
+ASGC_ElemFireTypeInputChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemFire.Value) > 0)
+    {
+        ASV.PressKey[1] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemFire.Value)
+    }    
+}
+ASGC_ElemIceTypeInputChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemIce.Value) > 0)
+    {
+        ASV.PressKey[2] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemIce.Value)
+    }    
+}
+ASGC_ElemLightningTypeInputChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemLightning.Value) > 0)
+    {
+        ASV.PressKey[3] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLightning.Value)
+    }    
+}
+ASGC_ElemGroundTypeInputChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemGround.Value) > 0)
+    {
+        ASV.PressKey[4] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemGround.Value)
+    }    
+}
+ASGC_ElemDarkTypeInputChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemDark.Value) > 0)
+    {
+        ASV.PressKey[5] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemDark.Value)
+    }    
+}
+ASGC_ElemLightTypeInputChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemLight.Value) > 0)
+    {
+        ASV.PressKey[6] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLight.Value)
+    }    
+}
+
 ArmorSwapColorElemFireUpdate()
 {
     MProgress_ASCCFEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation))
