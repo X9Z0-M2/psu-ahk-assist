@@ -24,180 +24,201 @@ SetKeyDelay 50, 40  ; 75ms between keys, 25ms between down/up.
 ; }
 
 ;VARS
-global AssistantSettingsFile := "psuassist.conf"
-global JA_X := 0
-global JA_Y := 0
-global JA_W := 11
-global JA_H := 11
-JustAttackFreq := 1
-JustAttackThresh := 3
-JustAttackDelay := 70
-JustAttackHotKey := "Right"
-JustAttackPressKey := ConvertHotKeyToKeyPress(JustAttackHotKey)
-Skip_JAResize := 0
-JustAttackWindowCanMove := 0
-JustAttackCount := 0
+global Conf := {}
+Conf.SettingsFile := "psuassist.conf"
 
-global PC_X := 0
-global PC_Y := 0
-global PC_W := 120
-global PC_H := 1
-PhotonChargeFreq := 200
-PhotonChargePPThresh := 7
-PhotonChargeTrigThresh := 2
-PhotonChargeDelay := 0
-PhotonChargeHotKey := "+F9"
-PhotonChargePressKey := ConvertHotKeyToKeyPress(PhotonChargeHotKey)
-global PC_MX := 0
-global PC_MY := 0
-Skip_PCResize := 0
-PC_Bar_Norm := -1
-PhotonChargeCount := 0
-PhotonChargeWindowCanMove := 0
+global JAG := {}
+global JAV := {}
+JAG.X := 0
+JAG.Y := 0
+JAG.W := 11
+JAG.H := 11
+JAV.Freq := 1
+JAV.Thresh := 3
+JAV.Delay := 70
+JAV.HotKey := "Right"
+JAV.PressKey := ConvertHotKeyToKeyPress(JAV.HotKey)
+JAG.SkipGuiResize := 0
+JAG.WindowCanMove := 0
+JAV.Count := 0
 
-global TH_X := 0
-global TH_Y := 0
-global TH_MX := 0
-global TH_MY := 0
-global TH_W := 130
-global TH_H := 1
-Skip_THResize := 0
-TrimateHealCount := 0
-TrimateHealFreq := 150
-TrimateHealHPThresh := 60
-TrimateHealTrigThresh := 2
-TrimateHealDelay := 0
-TH_Bar_Norm := -1
-TrimateHealHotKey := "+F8"
-TrimateHealPressKey := ConvertHotKeyToKeyPress(TrimateHealHotKey)
-TrimateHealWindowCanMove := 0
+global PCG := {}
+global PCV := {}
+PCG.X := 0
+PCG.Y := 0
+PCG.MX := 0
+PCG.MY := 0
+PCG.W := 120
+PCG.H := 1
+PCV.Freq := 200
+PCV.PPThresh := 7
+PCV.TrigThresh := 2
+PCV.Delay := 0
+PCV.HotKey := "+F9"
+PCV.PressKey := ConvertHotKeyToKeyPress(PCV.HotKey)
+PCV.BarPercent := -1
+PCV.Count := 0
+PCG.SkipGuiResize := 0
+PCG.WindowCanMove := 0
 
-global AS_X := 0
-global AS_Y := 0
-global AS_MX := 0
-global AS_MY := 0
-global AS_W := 16
-global AS_H := 1
-Skip_ASResize := 0
-ArmorSwapCount := 0
-ArmorSwapFreq := 300
-ArmorSwapDetectionVariation := 12 ; can be 0-255
-ArmorSwapTrigThresh := 2
-ArmorSwapDelay := 0
-ArmorSwapCanChange := 1
-ArmorSwapDurationBeforeNextChange := 10000 ; 15 seconds before can swap again
-ArmorSwapElemType := 0 ; 0=neutral, 1=fire, 2=ice, 3=lightning, 4=ground, 5=dark, 6=light
-ArmorSwapLastElemType := ArmorSwapElemType
-ArmorSwapLastElemForCount := ArmorSwapElemType
-ArmorSwapElemColor := {}
-ArmorSwapElemColor.Fire := 0xFE7878
-ArmorSwapElemColor.Ice := 0x7272FF
-ArmorSwapElemColor.Lightning := 0xDADA2B
-ArmorSwapElemColor.Ground := 0xE47D00
-ArmorSwapElemColor.Dark := 0x653865
-ArmorSwapElemColor.Light := 0xFFC7AD
-ArmorSwapElemFireHotKey := "+F1"
-ArmorSwapElemIceHotKey := "+F2"
-ArmorSwapElemLightningHotKey := "+F3"
-ArmorSwapElemGroundHotKey := "+F4"
-ArmorSwapElemDarkHotKey := "+F5"
-ArmorSwapElemLightHotKey := "+F6"
-ArmorSwapElemFirePressKey := ConvertHotKeyToKeyPress(ArmorSwapElemFireHotKey)
-ArmorSwapElemIcePressKey := ConvertHotKeyToKeyPress(ArmorSwapElemIceHotKey)
-ArmorSwapElemLightningPressKey := ConvertHotKeyToKeyPress(ArmorSwapElemLightningHotKey)
-ArmorSwapElemGroundPressKey := ConvertHotKeyToKeyPress(ArmorSwapElemGroundHotKey)
-ArmorSwapElemDarkPressKey := ConvertHotKeyToKeyPress(ArmorSwapElemDarkHotKey)
-ArmorSwapElemLightPressKey := ConvertHotKeyToKeyPress(ArmorSwapElemLightHotKey)
-ArmorSwapWindowCanMove := 0
+global THG := {}
+global THV := {}
+THG.X := 0
+THG.Y := 0
+THG.MX := 0
+THG.MY := 0
+THG.W := 130
+THG.H := 1
+THV.Count := 0
+THV.Freq := 150
+THV.HPThresh := 60
+THV.TrigThresh := 2
+THV.Delay := 0
+THV.BarPercent := -1
+THV.HotKey := "+F8"
+THV.PressKey := ConvertHotKeyToKeyPress(THV.HotKey)
+THG.SkipGuiResize := 0
+THG.WindowCanMove := 0
 
-
-
-LoadSettings(FileName)
+global ASG := {}
+global ASV := {}
+ASG.X := 0
+ASG.Y := 0
+ASG.MX := 0
+ASG.MY := 0
+ASG.W := 16
+ASG.H := 1
+ASV.Count := 0
+ASV.Freq := 225
+ASV.DetectionVariation := 12 ; can be 0-255
+ASV.TrigThresh := 2
+ASV.Delay := 0
+ASV.CanChange := 1
+ASV.DurationBeforeNextChange := 10000 ; 15 seconds before can swap again
+ASV.ElemType := 0 ; 0=neutral, 1=fire, 2=ice, 3=lightning, 4=ground, 5=dark, 6=light
+ASV.LastElemType := ASV.ElemType
+ASV.LastElemForCount := ASV.ElemType
+ASV.Color := []
+ASV.HotKey := []
+ASV.PressKey := []
+ASV.TitleText := []
+ASV.ColorLookup :=    Map("Fire",1, "Ice",2, "Lightning",3, "Ground",4, "Dark",5, "Light",6)
+ASV.ColorRevLookup := Map(1,"Fire", 2,"Ice", 3,"Lightning", 4,"Ground", 5,"Dark", 6,"Light")
+ASV.Color.InsertAt( ASV.ColorLookup["Fire"],      0xFE7878 )
+ASV.Color.InsertAt( ASV.ColorLookup["Ice"],       0x7272FF )
+ASV.Color.InsertAt( ASV.ColorLookup["Lightning"], 0xDADA2B )
+ASV.Color.InsertAt( ASV.ColorLookup["Ground"],    0xE47D00 )
+ASV.Color.InsertAt( ASV.ColorLookup["Dark"],      0x653865 )
+ASV.Color.InsertAt( ASV.ColorLookup["Light"],     0xFFC7AD )
+ASV.HotKey.InsertAt( ASV.ColorLookup["Fire"],      "+F1" )
+ASV.HotKey.InsertAt( ASV.ColorLookup["Ice"],       "+F2" )
+ASV.HotKey.InsertAt( ASV.ColorLookup["Lightning"], "+F3" )
+ASV.HotKey.InsertAt( ASV.ColorLookup["Ground"],    "+F4" )
+ASV.HotKey.InsertAt( ASV.ColorLookup["Dark"],      "+F5" )
+ASV.HotKey.InsertAt( ASV.ColorLookup["Light"],     "+F6" )
+ASV.TitleText.InsertAt( ASV.ColorLookup["Fire"],      "AS FIRE" )
+ASV.TitleText.InsertAt( ASV.ColorLookup["Ice"],       "AS ICE" )
+ASV.TitleText.InsertAt( ASV.ColorLookup["Lightning"], "AS LIGHTNING" )
+ASV.TitleText.InsertAt( ASV.ColorLookup["Ground"],    "AS GROUND" )
+ASV.TitleText.InsertAt( ASV.ColorLookup["Dark"],      "AS DARK" )
+ASV.TitleText.InsertAt( ASV.ColorLookup["Light"],     "AS LIGHT" )
+Loop 6
 {
-    global
-    If (FileExist(FileName))
-    {
-        Loop read, FileName
-        {
-            LoadSettings_TermArray := StrSplit(A_LoopReadLine, "=")
-            LoadSettings_SearchTerm := LoadSettings_TermArray[1]
-            LoadSettings_TermValue := LoadSettings_TermArray[2]
-            If (LoadSettings_SearchTerm = "JA_X")
-            {
-                JA_X := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "JA_Y")
-            {
-                JA_Y := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "JA_W")
-            {
-                JA_W := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "JA_H")
-            {
-                JA_H := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "JustAttackFreq")
-            {
-                JustAttackFreq := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "JustAttackThresh")
-            {
-                JustAttackThresh := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "JustAttackDelay")
-            {
-                JustAttackDelay := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "JustAttackHotKey")
-            {
-                JustAttackHotKey := LoadSettings_TermValue
-                JustAttackPressKey := ConvertHotKeyToKeyPress(JustAttackHotKey)
-            }
-
-            If (LoadSettings_SearchTerm = "PC_X")
-            {
-                PC_X := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "PC_Y")
-            {
-                PC_Y := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "PC_W")
-            {
-                PC_W := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "PC_H")
-            {
-                PC_H := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "PhotonChargeFreq")
-            {
-                PhotonChargeFreq := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "PhotonChargePPThresh")
-            {
-                PhotonChargePPThresh := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "PhotonChargeTrigThresh")
-            {
-                PhotonChargeTrigThresh := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "PhotonChargeDelay")
-            {
-                PhotonChargeDelay := LoadSettings_TermValue
-            }
-            If (LoadSettings_SearchTerm = "PhotonChargeHotKey")
-            {
-                PhotonChargeHotKey := LoadSettings_TermValue
-                PhotonChargePressKey := ConvertHotKeyToKeyPress(PhotonChargeHotKey)
-            }
-        }
-    }
+    ASV.PressKey.InsertAt( A_Index, ConvertHotKeyToKeyPress(ASV.HotKey[A_Index]) )
 }
+ASV.CurDetectColorIdx := 1
+ASV.DetectionState := 0 ; 0=new search, 1=recheck find
+ASV.NewDetectTries := 2
+ASG.SkipGuiResize := 0
+ASG.WindowCanMove := 0
+
+
 ; TODO: enable and finish settings file loading
-; LoadSettings(AssistantSettingsFile)
+; LoadSettings(FileName)
+; {
+;     global
+;     If (FileExist(FileName))
+;     {
+;         Loop read, FileName
+;         {
+;             LoadSettings_TermArray := StrSplit(A_LoopReadLine, "=")
+;             LoadSettings_SearchTerm := LoadSettings_TermArray[1]
+;             LoadSettings_TermValue := LoadSettings_TermArray[2]
+;             If (LoadSettings_SearchTerm = "JAG.X")
+;             {
+;                 JAG.X := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "JAG.Y")
+;             {
+;                 JAG.Y := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "JAG.W")
+;             {
+;                 JAG.W := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "JAG.H")
+;             {
+;                 JAG.H := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "JAV.Freq")
+;             {
+;                 JAV.Freq := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "JAV.Thresh")
+;             {
+;                 JAV.Thresh := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "JAV.Delay")
+;             {
+;                 JAV.Delay := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "JAV.HotKey")
+;             {
+;                 JAV.HotKey := LoadSettings_TermValue
+;                 JAV.PressKey := ConvertHotKeyToKeyPress(JAV.HotKey)
+;             }
+
+;             If (LoadSettings_SearchTerm = "PCG.X")
+;             {
+;                 PCG.X := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "PCG.Y")
+;             {
+;                 PCG.Y := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "PCG.W")
+;             {
+;                 PCG.W := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "PCG.H")
+;             {
+;                 PCG.H := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "PCV.Freq")
+;             {
+;                 PCV.Freq := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "PCV.PPThresh")
+;             {
+;                 PCV.PPThresh := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "PCV.TrigThresh")
+;             {
+;                 PCV.TrigThresh := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "PCV.Delay")
+;             {
+;                 PCV.Delay := LoadSettings_TermValue
+;             }
+;             If (LoadSettings_SearchTerm = "PCV.HotKey")
+;             {
+;                 PCV.HotKey := LoadSettings_TermValue
+;                 PCV.PressKey := ConvertHotKeyToKeyPress(PCV.HotKey)
+;             }
+;         }
+;     }
+; }
+; LoadSettings(Conf.SettingsFile)
 
 ; ; Create custom gui to control all script components
 Menu_Gui := Gui("+AlwaysOnTop +MinSize50x50 +MaxSize900x900 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu -DPIScale", "PSU AIO Auto")
@@ -221,155 +242,155 @@ MTab_Settings := Menu_Gui.Add("Tab3","-Wrap XS w130", ["JA","PC","TH","AS","AS K
 
 MTab_Settings.UseTab(1)
 MButton_ShowJA := Menu_Gui.Add("Button", "", "Hide JA")
-MButton_ShowJA.OnEvent("Click", JustAttackAllowMoveWindow)
+MButton_ShowJA.OnEvent("Click", JAGC_AllowMoveWindow)
 
 Menu_Gui.Add("Text", , "JA Key")
-MHotkey_JAPressKey := Menu_Gui.Add("Hotkey", "w110 vJAPressKeyHotkey", JustAttackHotKey)
-MHotkey_JAPressKey.OnEvent("Change", JustAttackPressKeyChanged)
+MHotkey_JAPressKey := Menu_Gui.Add("Hotkey", "w110 vJAPressKeyHotkey", JAV.HotKey)
+MHotkey_JAPressKey.OnEvent("Change", JAGC_PressKeyChanged)
 
 Menu_Gui.Add("Text", , "Frequency (ms)")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", JustAttackFreqChanged)
-MUpDown_JAFreq := Menu_Gui.Add("UpDown", "vJAFreqUpDown Range1-1000", JustAttackFreq)
-MUpDown_JAFreq.OnEvent("Change", JustAttackFreqChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", JAGC_FreqChanged)
+MUpDown_JAFreq := Menu_Gui.Add("UpDown", "vJAFreqUpDown Range1-1000", JAV.Freq)
+MUpDown_JAFreq.OnEvent("Change", JAGC_FreqChanged)
 
 Menu_Gui.Add("Text", , "Trigger Threshold")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", JustAttackThreshChanged)
-MUpDown_JAThresh := Menu_Gui.Add("UpDown", "vJAThreshUpDown Range0-50", JustAttackThresh)
-MUpDown_JAThresh.OnEvent("Change", JustAttackThreshChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", JAGC_ThreshChanged)
+MUpDown_JAThresh := Menu_Gui.Add("UpDown", "vJAThreshUpDown Range0-50", JAV.Thresh)
+MUpDown_JAThresh.OnEvent("Change", JAGC_ThreshChanged)
 
 Menu_Gui.Add("Text", , "Input Delay (ms)")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", JustAttackDelayChanged)
-MUpDown_JADelay :=Menu_Gui.Add("UpDown", "vJADelayUpDown Range0-500", JustAttackDelay)
-MUpDown_JADelay.OnEvent("Change", JustAttackDelayChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", JAGC_DelayChanged)
+MUpDown_JADelay :=Menu_Gui.Add("UpDown", "vJADelayUpDown Range0-500", JAV.Delay)
+MUpDown_JADelay.OnEvent("Change", JAGC_DelayChanged)
 
 Menu_Gui.Add("Text", , "Position Detect Pixel")
 MUpDown_JAVert := Menu_Gui.Add("UpDown", "-16 H40 vJAVertUpDown Range-1-1", 0)
-MUpDown_JAVert.OnEvent("Change", JustAttackVertChanged)
+MUpDown_JAVert.OnEvent("Change", JAGC_VertChanged)
 MUpDown_JAHorz := Menu_Gui.Add("UpDown", "XS35 W45 vJAVHorzUpDown Horz Range-1-1", 0)
-MUpDown_JAHorz.OnEvent("Change", JustAttackHorzChanged)
+MUpDown_JAHorz.OnEvent("Change", JAGC_HorzChanged)
 
 MTab_Settings.UseTab(2)
 MButton_ShowPC := Menu_Gui.Add("Button", "", "Hide PC")
-MButton_ShowPC.OnEvent("Click", PhotonChargeAllowMoveWindow)
+MButton_ShowPC.OnEvent("Click", PCGC_AllowMoveWindow)
 
 Menu_Gui.Add("Text", , "PC Key")
-MHotkey_PCPressKey := Menu_Gui.Add("Hotkey", "w110 vPCPressKeyHotkey", PhotonChargeHotKey)
-MHotkey_PCPressKey.OnEvent("Change", PhotonChargePressKeyChanged)
+MHotkey_PCPressKey := Menu_Gui.Add("Hotkey", "w110 vPCPressKeyHotkey", PCV.HotKey)
+MHotkey_PCPressKey.OnEvent("Change", PCGC_PressKeyChanged)
 
 Menu_Gui.Add("Text", , "Frequency (ms)")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", PhotonChargeFreqChanged)
-MUpDown_PCFreq := Menu_Gui.Add("UpDown", "vPCFreqUpDown Range1-1000", PhotonChargeFreq)
-MUpDown_PCFreq.OnEvent("Change", PhotonChargeFreqChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", PCGC_FreqChanged)
+MUpDown_PCFreq := Menu_Gui.Add("UpDown", "vPCFreqUpDown Range1-1000", PCV.Freq)
+MUpDown_PCFreq.OnEvent("Change", PCGC_FreqChanged)
 
 Menu_Gui.Add("Text", , "Trigger Threshold")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", PhotonChargeTrigThreshChanged)
-MUpDown_PCTrigThresh := Menu_Gui.Add("UpDown", "vPCTrigThreshUpDown Range0-50", PhotonChargeTrigThresh)
-MUpDown_PCTrigThresh.OnEvent("Change", PhotonChargeTrigThreshChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", PCGC_TrigThreshChanged)
+MUpDown_PCTrigThresh := Menu_Gui.Add("UpDown", "vPCTrigThreshUpDown Range0-50", PCV.TrigThresh)
+MUpDown_PCTrigThresh.OnEvent("Change", PCGC_TrigThreshChanged)
 Menu_Gui.Add("Text", , "PP Threshold %")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", PhotonChargePPThreshChanged)
-MUpDown_PCPPThresh := Menu_Gui.Add("UpDown", "vPCPPThreshUpDown Range0-50", PhotonChargePPThresh)
-MUpDown_PCPPThresh.OnEvent("Change", PhotonChargePPThreshChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", PCGC_PPThreshChanged)
+MUpDown_PCPPThresh := Menu_Gui.Add("UpDown", "vPCPPThreshUpDown Range0-50", PCV.PPThresh)
+MUpDown_PCPPThresh.OnEvent("Change", PCGC_PPThreshChanged)
 
 Menu_Gui.Add("Text", , "Input Delay (ms)")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", PhotonChargeDelayChanged)
-MUpDown_PCDelay :=Menu_Gui.Add("UpDown", "vPCDelayUpDown Range0-500", PhotonChargeDelay)
-MUpDown_PCDelay.OnEvent("Change", PhotonChargeDelayChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", PCGC_DelayChanged)
+MUpDown_PCDelay :=Menu_Gui.Add("UpDown", "vPCDelayUpDown Range0-500", PCV.Delay)
+MUpDown_PCDelay.OnEvent("Change", PCGC_DelayChanged)
 
 Menu_Gui.Add("Text", , "Position Detect Line")
 MUpDown_PCVert := Menu_Gui.Add("UpDown", "-16 H40 vPCVertUpDown Range-1-1", 0)
-MUpDown_PCVert.OnEvent("Change", PhotonChargeVertChanged)
+MUpDown_PCVert.OnEvent("Change", PCGC_VertChanged)
 MUpDown_PCHorz := Menu_Gui.Add("UpDown", "XS35 W45 vPCVHorzUpDown Horz Range-1-1", 0)
-MUpDown_PCHorz.OnEvent("Change", PhotonChargeHorzChanged)
+MUpDown_PCHorz.OnEvent("Change", PCGC_HorzChanged)
 
 MTab_Settings.UseTab(3)
 MButton_ShowTH := Menu_Gui.Add("Button", "", "Hide TH")
-MButton_ShowTH.OnEvent("Click", TrimateHealAllowMoveWindow)
+MButton_ShowTH.OnEvent("Click", THGC_AllowMoveWindow)
 
 Menu_Gui.Add("Text", , "TH Key")
-MHotkey_THPressKey := Menu_Gui.Add("Hotkey", "w110 vTHPressKeyHotkey", TrimateHealHotKey)
-MHotkey_THPressKey.OnEvent("Change", TrimateHealPressKeyChanged)
+MHotkey_THPressKey := Menu_Gui.Add("Hotkey", "w110 vTHPressKeyHotkey", THV.HotKey)
+MHotkey_THPressKey.OnEvent("Change", THGC_PressKeyChanged)
 
 Menu_Gui.Add("Text", , "Frequency (ms)")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", TrimateHealFreqChanged)
-MUpDown_THFreq := Menu_Gui.Add("UpDown", "vTHFreqUpDown Range1-1000", TrimateHealFreq)
-MUpDown_THFreq.OnEvent("Change", TrimateHealFreqChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", THGC_FreqChanged)
+MUpDown_THFreq := Menu_Gui.Add("UpDown", "vTHFreqUpDown Range1-1000", THV.Freq)
+MUpDown_THFreq.OnEvent("Change", THGC_FreqChanged)
 
 Menu_Gui.Add("Text", , "Trigger Threshold")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", TrimateHealTrigThreshChanged)
-MUpDown_THTrigThresh := Menu_Gui.Add("UpDown", "vTHTrigThreshUpDown Range0-50", TrimateHealTrigThresh)
-MUpDown_THTrigThresh.OnEvent("Change", TrimateHealTrigThreshChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", THGC_TrigThreshChanged)
+MUpDown_THTrigThresh := Menu_Gui.Add("UpDown", "vTHTrigThreshUpDown Range0-50", THV.TrigThresh)
+MUpDown_THTrigThresh.OnEvent("Change", THGC_TrigThreshChanged)
 
 Menu_Gui.Add("Text", , "HP Threshold %")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", TrimateHealThreshChanged)
-MUpDown_THHPThresh := Menu_Gui.Add("UpDown", "vTHHPThreshUpDown Range0-100", TrimateHealHPThresh)
-MUpDown_THHPThresh.OnEvent("Change", TrimateHealThreshChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", THGC_HPThreshChanged)
+MUpDown_THHPThresh := Menu_Gui.Add("UpDown", "vTHHPThreshUpDown Range0-100", THV.HPThresh)
+MUpDown_THHPThresh.OnEvent("Change", THGC_HPThreshChanged)
 
 Menu_Gui.Add("Text", , "Input Delay (ms)")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", TrimateHealDelayChanged)
-MUpDown_THDelay :=Menu_Gui.Add("UpDown", "vTHDelayUpDown Range0-500", TrimateHealDelay)
-MUpDown_THDelay.OnEvent("Change", TrimateHealDelayChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", THGC_DelayChanged)
+MUpDown_THDelay :=Menu_Gui.Add("UpDown", "vTHDelayUpDown Range0-500", THV.Delay)
+MUpDown_THDelay.OnEvent("Change", THGC_DelayChanged)
 
 Menu_Gui.Add("Text", , "Position Detect Line")
 MUpDown_THVert := Menu_Gui.Add("UpDown", "-16 H40 vTHVertUpDown Range-1-1", 0)
-MUpDown_THVert.OnEvent("Change", TrimateHealVertChanged)
+MUpDown_THVert.OnEvent("Change", THGC_VertChanged)
 MUpDown_THHorz := Menu_Gui.Add("UpDown", "Y+6 XS35 W45 vTHVHorzUpDown Horz Range-1-1", 0)
-MUpDown_THHorz.OnEvent("Change", TrimateHealHorzChanged)
+MUpDown_THHorz.OnEvent("Change", THGC_HorzChanged)
 
 MTab_Settings.UseTab(4)
 MButton_ShowAS := Menu_Gui.Add("Button", "", "Hide AS")
 MButton_ShowAS.OnEvent("Click", ArmorSwapAllowMoveWindow)
 
 Menu_Gui.Add("Text", , "Frequency (ms)")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", ArmorSwapFreqChanged)
-MUpDown_ASFreq := Menu_Gui.Add("UpDown", "vASFreqUpDown Range1-1000", ArmorSwapFreq)
-MUpDown_ASFreq.OnEvent("Change", ArmorSwapFreqChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", ASGC_FreqChanged)
+MUpDown_ASFreq := Menu_Gui.Add("UpDown", "vASFreqUpDown Range1-1000", ASV.Freq)
+MUpDown_ASFreq.OnEvent("Change", ASGC_FreqChanged)
 
 Menu_Gui.Add("Text", , "Trigger Threshold")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", ArmorSwapTrigThreshChanged)
-MUpDown_ASTrigThresh := Menu_Gui.Add("UpDown", "vASTrigThreshUpDown Range0-50", ArmorSwapTrigThresh)
-MUpDown_ASTrigThresh.OnEvent("Change", ArmorSwapTrigThreshChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", ASGC_TrigThreshChanged)
+MUpDown_ASTrigThresh := Menu_Gui.Add("UpDown", "vASTrigThreshUpDown Range0-50", ASV.TrigThresh)
+MUpDown_ASTrigThresh.OnEvent("Change", ASGC_TrigThreshChanged)
 
 Menu_Gui.Add("Text", , "Input Delay (ms)")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", ArmorSwapDelayChanged)
-MUpDown_ASDelay := Menu_Gui.Add("UpDown", "vASDelayUpDown Range0-500", ArmorSwapDelay)
-MUpDown_ASDelay.OnEvent("Change", ArmorSwapDelayChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", ASGC_DelayChanged)
+MUpDown_ASDelay := Menu_Gui.Add("UpDown", "vASDelayUpDown Range0-500", ASV.Delay)
+MUpDown_ASDelay.OnEvent("Change", ASGC_DelayChanged)
 
 Menu_Gui.Add("Text", , "Time Before Next Swap")
-Menu_Gui.Add("Edit", "w60").OnEvent("Change", ArmorSwapDurationNextChgChanged)
-MUpDown_ASDurationNextChg := Menu_Gui.Add("UpDown", "vASDurationNextChgUpDown Range0-60000", ArmorSwapDurationBeforeNextChange)
-MUpDown_ASDurationNextChg.OnEvent("Change", ArmorSwapDurationNextChgChanged)
+Menu_Gui.Add("Edit", "w60").OnEvent("Change", ASGC_DurationNextChgChanged)
+MUpDown_ASDurationNextChg := Menu_Gui.Add("UpDown", "vASDurationNextChgUpDown Range0-60000", ASV.DurationBeforeNextChange)
+MUpDown_ASDurationNextChg.OnEvent("Change", ASGC_DurationNextChgChanged)
 
 Menu_Gui.Add("Text", , "Position Detect Line")
 MUpDown_ASVert := Menu_Gui.Add("UpDown", "-16 H40 vASVertUpDown Range-1-1", 0)
-MUpDown_ASVert.OnEvent("Change", ArmorSwapVertChanged)
+MUpDown_ASVert.OnEvent("Change", ASGC_VertChanged)
 MUpDown_ASHorz := Menu_Gui.Add("UpDown", "Y+6 XS35 W45 vASVHorzUpDown Horz Range-1-1", 0)
-MUpDown_ASHorz.OnEvent("Change", ArmorSwapHorzChanged)
+MUpDown_ASHorz.OnEvent("Change", ASGC_HorzChanged)
 
 MTab_Settings.UseTab(5)
-Menu_Gui.Add("Text", , "AS FIRE")
-MHotkey_ASPressKeyElemFire := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemFireHotkey", ArmorSwapElemFireHotKey)
-MHotkey_ASPressKeyElemFire.OnEvent("Change", ArmorSwapElemFirePressKeyChanged)
-Menu_Gui.Add("Text", , "AS ICE")
-MHotkey_ASPressKeyElemIce := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemIceHotkey", ArmorSwapElemIceHotKey)
-MHotkey_ASPressKeyElemIce.OnEvent("Change", ArmorSwapElemIcePressKeyChanged)
-Menu_Gui.Add("Text", , "AS LIGHTNING")
-MHotkey_ASPressKeyElemLightning := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemLightningHotkey", ArmorSwapElemLightningHotKey)
-MHotkey_ASPressKeyElemLightning.OnEvent("Change", ArmorSwapElemLightningPressKeyChanged)
-Menu_Gui.Add("Text", , "AS GROUND")
-MHotkey_ASPressKeyElemGround := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemGroundHotkey", ArmorSwapElemGroundHotKey)
-MHotkey_ASPressKeyElemGround.OnEvent("Change", ArmorSwapElemGroundPressKeyChanged)
-Menu_Gui.Add("Text", , "AS DARK")
-MHotkey_ASPressKeyElemDark := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemDarkHotkey", ArmorSwapElemDarkHotKey)
-MHotkey_ASPressKeyElemDark.OnEvent("Change", ArmorSwapElemDarkPressKeyChanged)
-Menu_Gui.Add("Text", , "AS LIGHT")
-MHotkey_ASPressKeyElemLight := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemLightHotkey", ArmorSwapElemLightHotKey)
-MHotkey_ASPressKeyElemLight.OnEvent("Change", ArmorSwapElemLightPressKeyChanged)
+Menu_Gui.Add("Text", , "FIRE")
+MHotkey_ASPressKeyElemFire := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemFireHotkey", ASV.HotKey[1])
+MHotkey_ASPressKeyElemFire.OnEvent("Change", ASGC_ElemFirePressKeyChanged)
+Menu_Gui.Add("Text", , "ICE")
+MHotkey_ASPressKeyElemIce := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemIceHotkey", ASV.HotKey[2])
+MHotkey_ASPressKeyElemIce.OnEvent("Change", ASGC_ElemIcePressKeyChanged)
+Menu_Gui.Add("Text", , "LIGHTNING")
+MHotkey_ASPressKeyElemLightning := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemLightningHotkey", ASV.HotKey[3])
+MHotkey_ASPressKeyElemLightning.OnEvent("Change", ASGC_ElemLightningPressKeyChanged)
+Menu_Gui.Add("Text", , "GROUND")
+MHotkey_ASPressKeyElemGround := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemGroundHotkey", ASV.HotKey[4])
+MHotkey_ASPressKeyElemGround.OnEvent("Change", ASGC_ElemGroundPressKeyChanged)
+Menu_Gui.Add("Text", , "DARK")
+MHotkey_ASPressKeyElemDark := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemDarkHotkey", ASV.HotKey[5])
+MHotkey_ASPressKeyElemDark.OnEvent("Change", ASGC_ElemDarkPressKeyChanged)
+Menu_Gui.Add("Text", , "LIGHT")
+MHotkey_ASPressKeyElemLight := Menu_Gui.Add("Hotkey", "w90 vASPressKeyElemLightHotkey", ASV.HotKey[6])
+MHotkey_ASPressKeyElemLight.OnEvent("Change", ASGC_ElemLightPressKeyChanged)
 
 MTab_Settings.UseTab(6)
 Menu_Gui.Add("Text", , "Detect Variation 0-255")
-Menu_Gui.Add("Edit", "w50").OnEvent("Change", ArmorSwapDetectionVariationChanged)
-MUpDown_ASDTVARTN := Menu_Gui.Add("UpDown", "vASHPDetectionVariationUpDown Range0-255", ArmorSwapDetectionVariation)
-MUpDown_ASDTVARTN.OnEvent("Change", ArmorSwapDetectionVariationChanged)
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", ASGC_DetectionVariationChanged)
+MUpDown_ASDTVARTN := Menu_Gui.Add("UpDown", "vASHPDetectionVariationUpDown Range0-255", ASV.DetectionVariation)
+MUpDown_ASDTVARTN.OnEvent("Change", ASGC_DetectionVariationChanged)
 
 MidColorWidth := 20
 MidColorPos := 75
@@ -378,105 +399,105 @@ MinColorPos := MidColorPos - MinColorWidth + 1
 MaxColorWidth := 10
 MaxColorPos := MidColorPos + MidColorWidth - 1
 Menu_Gui.Add("Text", "Section", "FIRE")
-MProgress_ASCCFEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorFireElementMax c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Fire,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCFEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorFireElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation), -1)
 MProgress_ASCCFEMX.Value := 100
-MProgress_ASCCFE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorFireElement c" . Format("{:X}", ArmorSwapElemColor.Fire), -1)
+MProgress_ASCCFE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorFireElement c" . Format("{:X}", ASV.Color[1]), -1)
 MProgress_ASCCFE.Value := 100
-MProgress_ASCCFEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorFireElementMin c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Fire,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCFEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorFireElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation), -1)
 MProgress_ASCCFEMN.Value := 100
 Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemFireChanged)
-MUpDown_ASColorRElemFire := Menu_Gui.Add("UpDown", "vASColorRElemFireUpDown Range0-255", RedComponentFromHexAsRGBInt(ArmorSwapElemColor.Fire))
+MUpDown_ASColorRElemFire := Menu_Gui.Add("UpDown", "vASColorRElemFireUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[1]))
 MUpDown_ASColorRElemFire.OnEvent("Change", ArmorSwapColorRElemFireChanged)
 Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemFireChanged)
-MUpDown_ASColorGElemFire := Menu_Gui.Add("UpDown", "vASColorGElemFireUpDown Range0-255", GreenComponentFromHexAsRGBInt(ArmorSwapElemColor.Fire))
+MUpDown_ASColorGElemFire := Menu_Gui.Add("UpDown", "vASColorGElemFireUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[1]))
 MUpDown_ASColorGElemFire.OnEvent("Change", ArmorSwapColorGElemFireChanged)
 Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemFireChanged)
-MUpDown_ASColorBElemFire := Menu_Gui.Add("UpDown", "vASColorBElemFireUpDown Range0-255", BlueComponentFromHexAsRGBInt(ArmorSwapElemColor.Fire))
+MUpDown_ASColorBElemFire := Menu_Gui.Add("UpDown", "vASColorBElemFireUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[1]))
 MUpDown_ASColorBElemFire.OnEvent("Change", ArmorSwapColorBElemFireChanged)
 
 Menu_Gui.Add("Text", "Section XS", "ICE")
-MProgress_ASCCIEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorIceElementMax c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Ice,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCIEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorIceElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation), -1)
 MProgress_ASCCIEMX.Value := 100
-MProgress_ASCCIE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorIceElement c" . Format("{:X}", ArmorSwapElemColor.Ice), -1)
+MProgress_ASCCIE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorIceElement c" . Format("{:X}", ASV.Color[2]), -1)
 MProgress_ASCCIE.Value := 100
-MProgress_ASCCIEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorIceElementMin c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Ice,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCIEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorIceElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation), -1)
 MProgress_ASCCIEMN.Value := 100
 Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemIceChanged)
-MUpDown_ASColorRElemIce := Menu_Gui.Add("UpDown", "vASColorRElemIceUpDown Range0-255", RedComponentFromHexAsRGBInt(ArmorSwapElemColor.Ice))
+MUpDown_ASColorRElemIce := Menu_Gui.Add("UpDown", "vASColorRElemIceUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[2]))
 MUpDown_ASColorRElemIce.OnEvent("Change", ArmorSwapColorRElemIceChanged)
 Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemIceChanged)
-MUpDown_ASColorGElemIce := Menu_Gui.Add("UpDown", "vASColorGElemIceUpDown Range0-255", GreenComponentFromHexAsRGBInt(ArmorSwapElemColor.Ice))
+MUpDown_ASColorGElemIce := Menu_Gui.Add("UpDown", "vASColorGElemIceUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[2]))
 MUpDown_ASColorGElemIce.OnEvent("Change", ArmorSwapColorGElemIceChanged)
 Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemIceChanged)
-MUpDown_ASColorBElemIce := Menu_Gui.Add("UpDown", "vASColorBElemIceUpDown Range0-255", BlueComponentFromHexAsRGBInt(ArmorSwapElemColor.Ice))
+MUpDown_ASColorBElemIce := Menu_Gui.Add("UpDown", "vASColorBElemIceUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[2]))
 MUpDown_ASColorBElemIce.OnEvent("Change", ArmorSwapColorBElemIceChanged)
 
 Menu_Gui.Add("Text", "Section XS", "LIGHTNING")
-MProgress_ASCCLNEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorLightningElementMax c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Lightning,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCLNEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorLightningElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation), -1)
 MProgress_ASCCLNEMX.Value := 100
-MProgress_ASCCLNE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorLightningElement c" . Format("{:X}", ArmorSwapElemColor.Lightning), -1)
+MProgress_ASCCLNE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorLightningElement c" . Format("{:X}", ASV.Color[3]), -1)
 MProgress_ASCCLNE.Value := 100
-MProgress_ASCCLNEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorLightningElementMin c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Lightning,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCLNEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorLightningElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation), -1)
 MProgress_ASCCLNEMN.Value := 100
 Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemLightningChanged)
-MUpDown_ASColorRElemLightning := Menu_Gui.Add("UpDown", "vASColorRElemLightningUpDown Range0-255", RedComponentFromHexAsRGBInt(ArmorSwapElemColor.Lightning))
+MUpDown_ASColorRElemLightning := Menu_Gui.Add("UpDown", "vASColorRElemLightningUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[3]))
 MUpDown_ASColorRElemLightning.OnEvent("Change", ArmorSwapColorRElemLightningChanged)
 Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemLightningChanged)
-MUpDown_ASColorGElemLightning := Menu_Gui.Add("UpDown", "vASColorGElemLightningUpDown Range0-255", GreenComponentFromHexAsRGBInt(ArmorSwapElemColor.Lightning))
+MUpDown_ASColorGElemLightning := Menu_Gui.Add("UpDown", "vASColorGElemLightningUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[3]))
 MUpDown_ASColorGElemLightning.OnEvent("Change", ArmorSwapColorGElemLightningChanged)
 Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemLightningChanged)
-MUpDown_ASColorBElemLightning := Menu_Gui.Add("UpDown", "vASColorBElemLightningUpDown Range0-255", BlueComponentFromHexAsRGBInt(ArmorSwapElemColor.Lightning))
+MUpDown_ASColorBElemLightning := Menu_Gui.Add("UpDown", "vASColorBElemLightningUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[3]))
 MUpDown_ASColorBElemLightning.OnEvent("Change", ArmorSwapColorBElemLightningChanged)
 
 Menu_Gui.Add("Text", "Section XS", "GROUND")
-MProgress_ASCCGEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorGroundElementMax c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Ground,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCGEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorGroundElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation), -1)
 MProgress_ASCCGEMX.Value := 100
-MProgress_ASCCGE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorGroundElement c" . Format("{:X}", ArmorSwapElemColor.Ground), -1)
+MProgress_ASCCGE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorGroundElement c" . Format("{:X}", ASV.Color[4]), -1)
 MProgress_ASCCGE.Value := 100
-MProgress_ASCCGEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorGroundElementMin c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Ground,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCGEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorGroundElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation), -1)
 MProgress_ASCCGEMN.Value := 100
 Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemGroundChanged)
-MUpDown_ASColorRElemGround := Menu_Gui.Add("UpDown", "vASColorRElemGroundUpDown Range0-255", RedComponentFromHexAsRGBInt(ArmorSwapElemColor.Ground))
+MUpDown_ASColorRElemGround := Menu_Gui.Add("UpDown", "vASColorRElemGroundUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[4]))
 MUpDown_ASColorRElemGround.OnEvent("Change", ArmorSwapColorRElemGroundChanged)
 Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemGroundChanged)
-MUpDown_ASColorGElemGround := Menu_Gui.Add("UpDown", "vASColorGElemGroundUpDown Range0-255", GreenComponentFromHexAsRGBInt(ArmorSwapElemColor.Ground))
+MUpDown_ASColorGElemGround := Menu_Gui.Add("UpDown", "vASColorGElemGroundUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[4]))
 MUpDown_ASColorGElemGround.OnEvent("Change", ArmorSwapColorGElemGroundChanged)
 Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemGroundChanged)
-MUpDown_ASColorBElemGround := Menu_Gui.Add("UpDown", "vASColorBElemGroundUpDown Range0-255", BlueComponentFromHexAsRGBInt(ArmorSwapElemColor.Ground))
+MUpDown_ASColorBElemGround := Menu_Gui.Add("UpDown", "vASColorBElemGroundUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[4]))
 MUpDown_ASColorBElemGround.OnEvent("Change", ArmorSwapColorBElemGroundChanged)
 
 Menu_Gui.Add("Text", "Section XS", "DARK")
-MProgress_ASCCDEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorDarkElementMax c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Dark,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCDEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorDarkElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation), -1)
 MProgress_ASCCDEMX.Value := 100
-MProgress_ASCCDE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorDarkElement c" . Format("{:X}", ArmorSwapElemColor.Dark), -1)
+MProgress_ASCCDE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorDarkElement c" . Format("{:X}", ASV.Color[5]), -1)
 MProgress_ASCCDE.Value := 100
-MProgress_ASCCDEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorDarkElementMin c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Dark,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCDEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorDarkElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation), -1)
 MProgress_ASCCDEMN.Value := 100
 Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemDarkChanged)
-MUpDown_ASColorRElemDark := Menu_Gui.Add("UpDown", "vASColorRElemDarkUpDown Range0-255", RedComponentFromHexAsRGBInt(ArmorSwapElemColor.Dark))
+MUpDown_ASColorRElemDark := Menu_Gui.Add("UpDown", "vASColorRElemDarkUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[5]))
 MUpDown_ASColorRElemDark.OnEvent("Change", ArmorSwapColorRElemDarkChanged)
 Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemDarkChanged)
-MUpDown_ASColorGElemDark := Menu_Gui.Add("UpDown", "vASColorGElemDarkUpDown Range0-255", GreenComponentFromHexAsRGBInt(ArmorSwapElemColor.Dark))
+MUpDown_ASColorGElemDark := Menu_Gui.Add("UpDown", "vASColorGElemDarkUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[5]))
 MUpDown_ASColorGElemDark.OnEvent("Change", ArmorSwapColorGElemDarkChanged)
 Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemDarkChanged)
-MUpDown_ASColorBElemDark := Menu_Gui.Add("UpDown", "vASColorBElemDarkUpDown Range0-255", BlueComponentFromHexAsRGBInt(ArmorSwapElemColor.Dark))
+MUpDown_ASColorBElemDark := Menu_Gui.Add("UpDown", "vASColorBElemDarkUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[5]))
 MUpDown_ASColorBElemDark.OnEvent("Change", ArmorSwapColorBElemDarkChanged)
 
 Menu_Gui.Add("Text", "Section XS", "LIGHT")
-MProgress_ASCCLIEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorLightElementMax c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Light,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCLIEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorLightElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation), -1)
 MProgress_ASCCLIEMX.Value := 100
-MProgress_ASCCLIE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorLightElement c" . Format("{:X}", ArmorSwapElemColor.Light), -1)
+MProgress_ASCCLIE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorLightElement c" . Format("{:X}", ASV.Color[6]), -1)
 MProgress_ASCCLIE.Value := 100
-MProgress_ASCCLIEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorLightElementMin c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Light,ArmorSwapDetectionVariation), -1)
+MProgress_ASCCLIEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorLightElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation), -1)
 MProgress_ASCCLIEMN.Value := 100
 Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemLightChanged)
-MUpDown_ASColorRElemLight := Menu_Gui.Add("UpDown", "vASColorRElemLightUpDown Range0-255", RedComponentFromHexAsRGBInt(ArmorSwapElemColor.Light))
+MUpDown_ASColorRElemLight := Menu_Gui.Add("UpDown", "vASColorRElemLightUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[6]))
 MUpDown_ASColorRElemLight.OnEvent("Change", ArmorSwapColorRElemLightChanged)
 Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemLightChanged)
-MUpDown_ASColorGElemLight := Menu_Gui.Add("UpDown", "vASColorGElemLightUpDown Range0-255", GreenComponentFromHexAsRGBInt(ArmorSwapElemColor.Light))
+MUpDown_ASColorGElemLight := Menu_Gui.Add("UpDown", "vASColorGElemLightUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[6]))
 MUpDown_ASColorGElemLight.OnEvent("Change", ArmorSwapColorGElemLightChanged)
 Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemLightChanged)
-MUpDown_ASColorBElemLight := Menu_Gui.Add("UpDown", "vASColorBElemLightUpDown Range0-255", BlueComponentFromHexAsRGBInt(ArmorSwapElemColor.Light))
+MUpDown_ASColorBElemLight := Menu_Gui.Add("UpDown", "vASColorBElemLightUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[6]))
 MUpDown_ASColorBElemLight.OnEvent("Change", ArmorSwapColorBElemLightChanged)
 
 
@@ -486,132 +507,147 @@ Menu_Gui.Show("W150 H490")
 
 
 ; ; Create custom gui to represent where ahk is detecting pixels for auto Just Attack 
-JA_Gui := Gui("+AlwaysOnTop +MinSize5x5 +MaxSize25x25 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "JA")
-JA_Gui.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
-JA_Gui.OnEvent("Size", JAResize )
-JAResize(GuiObj, MinMax, Width, Height)
-{
-    global
-    if (Skip_JAResize = 0)
-    {
-        GuiObj.GetClientPos(&JA_X, &JA_Y, &JA_W, &JA_H)
-    }
-    ToolTip "X" JA_X " Y" JA_Y " W" JA_W " H" JA_H
-    SetTimer () => ToolTip(), -1000, 10000
-    return True
-}
-JA_Gui.Show("W" . JA_W . " H" . JA_H)
-WinSetTransColor(JA_Gui.BackColor ,JA_Gui.Hwnd)
-
+JAG.GUI := Gui("+AlwaysOnTop +MinSize5x5 +MaxSize25x25 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "JA")
+JAG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
+JAG.GUI.OnEvent("Size", GUI_Resize )
+JAG.GUI.Show("W" . JAG.W . " H" . JAG.H)
+WinSetTransColor(JAG.GUI.BackColor ,JAG.GUI.Hwnd)
 
 ; ; Create custom gui to represent where ahk is detecting pixels for auto Photon Charge 
-PC_Gui := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "PC")
-PC_Gui.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
-PC_Gui.OnEvent("Size", PCResize )
-PCResize(GuiObj, MinMax, Width, Height)
-{
-    global
-    if (Skip_PCResize = 0)
-    {
-        GuiObj.GetClientPos(&PC_X, &PC_Y, &PC_W, &PC_H)
-        PC_MX := PC_X + PC_W
-        PC_MY := PC_Y + PC_H
-    }
-    ToolTip "X" PC_X " Y" PC_Y " W" PC_W " H" PC_H
-    SetTimer () => ToolTip(), -1000, 10000
-    return True
-}
-PC_Gui.Show("W" . PC_W . " H" . PC_H)
-WinSetTransColor(PC_Gui.BackColor , PC_Gui.Hwnd)
-
+PCG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "PC")
+PCG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
+PCG.GUI.OnEvent("Size", GUI_Resize )
+PCG.GUI.Show("W" . PCG.W . " H" . PCG.H)
+WinSetTransColor(PCG.GUI.BackColor , PCG.GUI.Hwnd)
 
 ; ; Create custom gui to represent where ahk is detecting pixels for auto Trimates (healing) 
-TH_Gui := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "TH")
-TH_Gui.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
-TH_Gui.OnEvent("Size", THResize )
-THResize(GuiObj, MinMax, Width, Height)
-{
-    global
-    if (Skip_THResize = 0)
-    {
-        GuiObj.GetClientPos(&TH_X, &TH_Y, &TH_W, &TH_H)
-        TH_MX := TH_X + TH_W
-        TH_MY := TH_Y + TH_H
-    }
-    ToolTip "X" TH_X " Y" TH_Y " W" TH_W " H" TH_H
-    SetTimer () => ToolTip(), -1000, 10000
-    return True
-}
-TH_Gui.Show("W" . TH_W . " H" . TH_H)
-WinSetTransColor(TH_Gui.BackColor , TH_Gui.Hwnd)
-
+THG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "TH")
+THG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
+THG.GUI.OnEvent("Size", GUI_Resize )
+THG.GUI.Show("W" . THG.W . " H" . THG.H)
+WinSetTransColor(THG.GUI.BackColor , THG.GUI.Hwnd)
 
 ; ; Create custom gui for enemy element type detection to armor swap
-AS_Gui := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "AS")
-AS_Gui.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
-AS_Gui.OnEvent("Size", ASResize )
-ASResize(GuiObj, MinMax, Width, Height)
+ASG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "AS")
+ASG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
+ASG.GUI.OnEvent("Size", GUI_Resize )
+ASG.GUI.Show("W" . ASG.W . " H" . ASG.H)
+WinSetTransColor(ASG.GUI.BackColor , ASG.GUI.Hwnd)
+
+; function to update the position and size of custom guis when changed
+GUI_Resize(GuiObj, MinMax, Width, Height)
 {
     global
-    if (Skip_ASResize = 0)
+    local GUI_Resized := true
+    If (JAG.GUI = GuiObj)
     {
-        GuiObj.GetClientPos(&AS_X, &AS_Y, &AS_W, &AS_H)
-        AS_MX := AS_X + AS_W
-        AS_MY := AS_Y + AS_H
+        If (JAG.SkipGuiResize = 0)
+        {
+            JAG.GUI.GetClientPos(&X, &Y, &W, &H)
+            JAG.X := X
+            JAG.Y := Y
+            JAG.W := W
+            JAG.H := H
+        }
     }
-    ToolTip "X" AS_X " Y" AS_Y " W" AS_W " H" AS_H
-    SetTimer () => ToolTip(), -1000, 10000
+    Else If (PCG.GUI = GuiObj)
+    {
+        If (PCG.SkipGuiResize = 0)
+        {
+            PCG.GUI.GetClientPos(&X, &Y, &W, &H)
+            PCG.X := X
+            PCG.Y := Y
+            PCG.W := W
+            PCG.H := H
+            PCG.MX := PCG.X + PCG.W
+            PCG.MY := PCG.Y + PCG.H
+        }
+    }
+    Else If (THG.GUI = GuiObj)
+    {
+        If (THG.SkipGuiResize = 0)
+        {
+            THG.GUI.GetClientPos(&X, &Y, &W, &H)
+            THG.X := X
+            THG.Y := Y
+            THG.W := W
+            THG.H := H
+            THG.MX := THG.X + THG.W
+            THG.MY := THG.Y + THG.H
+        }
+    }
+    Else If (ASG.GUI = GuiObj)
+    {
+        If (ASG.SkipGuiResize = 0)
+        {
+            ASG.GUI.GetClientPos(&X, &Y, &W, &H)
+            ASG.X := X
+            ASG.Y := Y
+            ASG.W := W
+            ASG.H := H
+            ASG.MX := ASG.X + ASG.W
+            ASG.MY := ASG.Y + ASG.H
+        }
+    }
+    Else
+    {
+        GUI_Resized := false
+    }
+
+    If (GUI_Resized = true)
+    {
+        ToolTip "X" X " Y" Y " W" W " H" H
+        SetTimer () => ToolTip(), -1000, 10000
+    }
     return True
 }
-AS_Gui.Show("W" . AS_W . " H" . AS_H)
-WinSetTransColor(AS_Gui.BackColor , AS_Gui.Hwnd)
-
 
 ; add hook for repositioning the ahk custom window
-OnMessage(0x03, MsgMonitor)
-MsgMonitor(wParam, lParam, msg, hwnd)
+OnMessage(0x03, GuiRepositionedHook)
+GuiRepositionedHook(wParam, lParam, msg, hwnd)
 {
-    if( hwnd = JA_Gui.Hwnd )
+    if( hwnd = JAG.GUI.Hwnd )
     {
-        JAResize(JA_Gui, 0, 0, 0)
+        GUI_Resize(JAG.GUI, 0, 0, 0)
     }
-    else if ( hwnd = PC_Gui.Hwnd )
+    else if ( hwnd = PCG.GUI.Hwnd )
     {
-        PCResize(PC_Gui, 0, 0, 0)
+        GUI_Resize(PCG.GUI, 0, 0, 0)
     }
-    else if ( hwnd = TH_Gui.Hwnd )
+    else if ( hwnd = THG.GUI.Hwnd )
     {
-        THResize(TH_Gui, 0, 0, 0)
+        GUI_Resize(THG.GUI, 0, 0, 0)
     }
-    else if ( hwnd = AS_Gui.Hwnd )
+    else if ( hwnd = ASG.GUI.Hwnd )
     {
-        ASResize(AS_Gui, 0, 0, 0)
+        GUI_Resize(ASG.GUI, 0, 0, 0)
     }
 }
-JAResize(JA_Gui, 0, 0, 0)
-PCResize(PC_Gui, 0, 0, 0)
-THResize(TH_Gui, 0, 0, 0)
-ASResize(AS_Gui, 0, 0, 0)
+; Init position and size values
+GUI_Resize(JAG.GUI, 0, 0, 0)
+GUI_Resize(PCG.GUI, 0, 0, 0)
+GUI_Resize(THG.GUI, 0, 0, 0)
+GUI_Resize(ASG.GUI, 0, 0, 0)
 
 
 
 ; Auto Just Attack
-SetTimer JustAttackLoop, JustAttackFreq
-JustAttackLoop()
+SetTimer JAV_Loop, JAV.Freq
+JAV_Loop()
 {
     global
-    P_Color := PixelGetColor(JA_X, JA_Y)
+    local P_Color := PixelGetColor(JAG.X, JAG.Y)
     If ( P_Color = 0x00FF00 )  ; green color
     {
-        MProgress_JA.Value := Max(Min(Round(JustAttackCount / JustAttackThresh * 100), 100),0)
-        JustAttackCount := JustAttackCount + 1
+        MProgress_JA.Value := Max(Min(Round(JAV.Count / JAV.Thresh * 100), 100),0)
+        JAV.Count := JAV.Count + 1
     } Else {
-        If (JustAttackCount > 0)
+        If (JAV.Count > 0)
         {
-            ToolTip "Time Green" JustAttackCount
+            ToolTip "Time Green" JAV.Count
             SetTimer () => ToolTip(), -1000, 10000
         }
-        JustAttackCount := 0
+        JAV.Count := 0
         If ( P_Color = 0xFF0000 )
         {
             MProgress_JA.Opt("+c0xFF0000")
@@ -621,45 +657,45 @@ JustAttackLoop()
             MProgress_JA.Value := 0
         }
     }
-    If (JustAttackCount >= JustAttackThresh)
+    If (JAV.Count >= JAV.Thresh)
     {
         MProgress_JA.Opt("+c0x00FF00")
         MProgress_JA.Value := 100
-        Sleep JustAttackDelay
+        Sleep JAV.Delay
         ToolTip "Just Attack!"
         SetTimer () => ToolTip(), -200, 10000
-        Send JustAttackPressKey
-        JustAttackCount := 0
+        Send JAV.PressKey
+        JAV.Count := 0
     }
     return True
 }
 
 
 ; Auto Photon Charge
-SetTimer PhotonChargeLoop, PhotonChargeFreq
-PhotonChargeLoop()
+SetTimer PCV_Loop, PCV.Freq
+PCV_Loop()
 {
     global
-    If ( PixelSearch(&PC_Px, &PC_Py, PC_MX, PC_MY, PC_X, PC_Y, 0x3A89DB) ) ; mid-blue color. Also can be 0x3987DB ?
+    If ( PixelSearch(&PC_Px, &PC_Py, PCG.MX, PCG.MY, PCG.X, PCG.Y, 0x3A89DB) ) ; mid-blue color. Also can be 0x3987DB ?
     {
-        PC_Bar_Norm := Round((PC_Px - PC_X) / (PC_W) * 100)
-        MProgress_PC.Value := PC_Bar_Norm
-        PC_Gui.Title := "PC " . PC_Bar_Norm . "/100"
-        If ( PC_Bar_Norm < PhotonChargePPThresh && PC_Bar_Norm > 0 ){
-            PhotonChargeCount := PhotonChargeCount + 1
+        PCV.BarPercent := Round((PC_Px - PCG.X) / (PCG.W) * 100)
+        MProgress_PC.Value := PCV.BarPercent
+        PCG.GUI.Title := "PC " . PCV.BarPercent . "/100"
+        If ( PCV.BarPercent < PCV.PPThresh && PCV.BarPercent > 0 ){
+            PCV.Count := PCV.Count + 1
         }
         
     } Else {
-        If (PhotonChargeCount > 0)
+        If (PCV.Count > 0)
         {
-            ToolTip "Time Blue" PhotonChargeCount
+            ToolTip "Time Blue" PCV.Count
             SetTimer () => ToolTip(), -1000, 10000
         }
-        PhotonChargeCount := 0
-        PC_Gui.Title := "PC"
+        PCV.Count := 0
+        PCG.GUI.Title := "PC"
     }
-;ToolTip "Pixel Search" PhotonChargeCount " " PC_X ":" PC_Y " " PC_W ":" PC_H " FOUND:" PC_Px ":" PC_Py " " PC_Bar_Norm
-    If (PhotonChargeCount >= PhotonChargeTrigThresh)
+;ToolTip "Pixel Search" PCV.Count " " PCG.X ":" PCG.Y " " PCG.W ":" PCG.H " FOUND:" PC_Px ":" PC_Py " " PCV.BarPercent
+    If (PCV.Count >= PCV.TrigThresh)
     {
         PhotonChargeUse()
     }
@@ -668,43 +704,43 @@ PhotonChargeLoop()
 
 
 ; Auto Trimate Heal
-SetTimer TrimateHealLoop, TrimateHealFreq
-TrimateHealLoop()
+SetTimer THV_Loop, THV.Freq
+THV_Loop()
 {
     global
-    If ( PixelSearch(&TH_Px, &TH_Py, TH_MX, TH_MY, TH_X, TH_Y, 0x5BD847 ) ) ; green color. Also can be, 0x5BD847, 0x58CD46, 0x47983D, 0x4D9F44  ?
+    If ( PixelSearch(&TH_Px, &TH_Py, THG.MX, THG.MY, THG.X, THG.Y, 0x5BD847 ) ) ; green color. Also can be, 0x5BD847, 0x58CD46, 0x47983D, 0x4D9F44  ?
     {
-        TH_Bar_Norm := Round((TH_Px - TH_X) / (TH_W) * 100)
-        MProgress_TH.Value := TH_Bar_Norm
+        THV.BarPercent := Round((TH_Px - THG.X) / (THG.W) * 100)
+        MProgress_TH.Value := THV.BarPercent
         MProgress_TH.Opt("+c0x5BD847")
-        TH_Gui.Title := "TH " . TH_Bar_Norm . "/100"
-        If ( TH_Bar_Norm < TrimateHealHPThresh && TH_Bar_Norm > 0 ){
-            TrimateHealCount := TrimateHealCount + 1
+        THG.GUI.Title := "TH " . THV.BarPercent . "/100"
+        If ( THV.BarPercent < THV.HPThresh && THV.BarPercent > 0 ){
+            THV.Count := THV.Count + 1
         }
         
     } Else {
-        If ( PixelSearch(&TH_Px, &TH_Py, TH_MX, TH_MY, TH_X, TH_Y, 0xFFFF00 ) ) ; yellow color. Also can be others, but changes constantly !
+        If ( PixelSearch(&TH_Px, &TH_Py, THG.MX, THG.MY, THG.X, THG.Y, 0xFFFF00 ) ) ; yellow color. Also can be others, but changes constantly !
         {
-            TH_Bar_Norm := Round((TH_Px - TH_X) / (TH_W) * 100)
-            MProgress_TH.Value := TH_Bar_Norm
+            THV.BarPercent := Round((TH_Px - THG.X) / (THG.W) * 100)
+            MProgress_TH.Value := THV.BarPercent
             MProgress_TH.Opt("+c0xFFFF00")
-            TH_Gui.Title := "TH " . TH_Bar_Norm . "/100"
-            If ( TH_Bar_Norm < TrimateHealHPThresh && TH_Bar_Norm > 0 ){
-                TrimateHealCount := TrimateHealCount + 1
+            THG.GUI.Title := "TH " . THV.BarPercent . "/100"
+            If ( THV.BarPercent < THV.HPThresh && THV.BarPercent > 0 ){
+                THV.Count := THV.Count + 1
             }
         } Else {
-            If (TrimateHealCount > 0)
+            If (THV.Count > 0)
             {
-                ToolTip "Time Yellow" TrimateHealCount
+                ToolTip "Time Yellow" THV.Count
                 SetTimer () => ToolTip(), -1000, 10000
             }
             MProgress_TH.Value := -1
-            TrimateHealCount := 0
-            TH_Gui.Title := "TH"
+            THV.Count := 0
+            THG.GUI.Title := "TH"
         }
     }
-;ToolTip "Pixel Search" TrimateHealCount " " TH_X ":" TH_Y " " TH_W ":" TH_H " FOUND:" TH_Px ":" TH_Py " " TH_Bar_Norm
-    If (TrimateHealCount >= TrimateHealTrigThresh)
+;ToolTip "Pixel Search" THV.Count " " THG.X ":" THG.Y " " THG.W ":" THG.H " FOUND:" TH_Px ":" TH_Py " " THV.BarPercent
+    If (THV.Count >= THV.TrigThresh)
     {
         TrimateHealUse()
     }
@@ -713,129 +749,141 @@ TrimateHealLoop()
 
 
 ; Auto Armor Swap
-SetTimer ArmorSwapLoop, ArmorSwapFreq
-ArmorSwapLoop()
+SetTimer ASV_Loop, ASV.Freq
+ASV_Loop()
 {
     global
-    If ( ArmorSwapColorEval( ArmorSwapElemColor.Fire , "AS FIRE", 1 ) ) ; dull red color.
+    local ASV_ColorDetected := false
+    local ASV_DetectTries := 1
+    If (ASV.DetectionState = 0)
     {
+        ASV_DetectTries := ASV.NewDetectTries
     }
-    Else If ( ArmorSwapColorEval( ArmorSwapElemColor.Ice , "AS ICE", 2 ) ) ; deep blue color.
+
+    Loop ASV_DetectTries
     {
-    }
-    Else If ( ArmorSwapColorEval( ArmorSwapElemColor.Lightning , "AS LIGHTNING", 3 ) ) ; yellow color.
-    {
-    }
-    Else If ( ArmorSwapColorEval( ArmorSwapElemColor.Ground , "AS GROUND", 4 ) ) ; burnt orange color.
-    {
-    }
-    Else If ( ArmorSwapColorEval( ArmorSwapElemColor.Dark , "AS DARK", 5 ) ) ; bright purple color.
-    {
-    }
-    Else If ( ArmorSwapColorEval( ArmorSwapElemColor.Light , "AS LIGHT", 6 ) ) ; beige color.
-    {
-    }
-    Else {
-        If (ArmorSwapCount > 0)
+        If ( ASV_ColorEval( ASV.CurDetectColorIdx ) )
         {
-            ToolTip "Time ArmorSwap" ArmorSwapCount
+            ASV_ColorDetected := true
+            ASV.DetectionState := 1
+            Break
+        }
+        ASV.CurDetectColorIdx := IntWrap(ASV.CurDetectColorIdx + 1, 1, 6)
+    }
+
+    If (ASV_ColorDetected = false)
+    {
+        If (ASV.Count > 0)
+        {
+            ToolTip "Time ArmorSwap" ASV.Count
             SetTimer () => ToolTip(), -1000, 10000
         }
-        ArmorSwapCount := 0
+        ASV.Count := 0
         MProgress_AS.Value := -1
-        AS_Gui.Title := "AS"
-        ArmorSwapElemType := 0
+        ASG.GUI.Title := "AS"
+        ASV.ElemType := 0
+        ASV.DetectionState := 0
     }
-; ToolTip "Pixel Search" ArmorSwapCount " " AS_X ":" AS_Y " " AS_W ":" AS_H " FOUND:" AS_Px ":" AS_Py " " ArmorSwapElemType
-    If (ArmorSwapCount >= ArmorSwapTrigThresh)
+; ToolTip "Pixel Search" ASV.Count " " ASG.X ":" ASG.Y " " ASG.W ":" ASG.H " FOUND:" AS_Px ":" AS_Py " " ASV.ElemType
+    If (ASV.Count >= ASV.TrigThresh)
     {
         ArmorSwapUse()
     }
     return True
 }
-ArmorSwapColorEval( EvalColor, ArmorSwapGuiTitle, ElementNum )
+ASV_ColorEval( ColorIdx )
 {
     global
-    If (PixelSearch(&AS_Px, &AS_Py, AS_MX, AS_MY, AS_X, AS_Y, EvalColor, ArmorSwapDetectionVariation ))
+    If (PixelSearch(&AS_Px, &AS_Py, ASG.MX, ASG.MY, ASG.X, ASG.Y, ASV.Color[ColorIdx], ASV.DetectionVariation ))
     {
-        MProgress_AS.Opt("+c0x" . Format("{:X}", EvalColor))
-        AS_Gui.Title := ArmorSwapGuiTitle
-        ArmorSwapElemType := ElementNum
-        If (ArmorSwapLastElemForCount = 0 || ArmorSwapElemType = ArmorSwapLastElemForCount)
+        MProgress_AS.Opt("+c0x" . Format("{:X}", ASV.Color[ColorIdx]))
+        ASG.GUI.Title := ASV.TitleText[ColorIdx]
+        ASV.ElemType := ColorIdx
+        If (ASV.LastElemForCount = 0 || ASV.ElemType = ASV.LastElemForCount)
         {
-            MProgress_AS.Value := Min(22 + (ArmorSwapCount / ArmorSwapTrigThresh) * (100-22), 100)
-            ArmorSwapCount := ArmorSwapCount + 1
+            MProgress_AS.Value := Min(22 + (ASV.Count / ASV.TrigThresh) * (100-22), 100)
+            ASV.Count := ASV.Count + 1
         }
         Else
         {
-            ArmorSwapCount := 0
-            MProgress_AS.Value := Min(22 + (ArmorSwapCount / ArmorSwapTrigThresh) * (100-22), 100)
+            ASV.Count := 0
+            MProgress_AS.Value := Min(22 + (ASV.Count / ASV.TrigThresh) * (100-22), 100)
         }
-        ArmorSwapLastElemForCount := ArmorSwapElemType
+        ASV.LastElemForCount := ASV.ElemType
         Return True
     }
     Return False
+}
+IntWrap(kX, LB, UB)
+{
+    Rang := UB - LB + 1
+    If (kX < LB)
+    {
+        kX := kX + Rang * ((LB - kX) / Rang + 1)
+    }
+
+    return LB + Mod((kX - LB), Rang)
 }
 
 
 PhotonChargeUse(*)
 {
     global
-    Sleep PhotonChargeDelay
+    Sleep PCV.Delay
     ToolTip "Photon Charge!"
     SetTimer () => ToolTip(), -1900, 10000
-    Send PhotonChargePressKey
-    PhotonChargeCount := 0
+    Send PCV.PressKey
+    PCV.Count := 0
 }
 TrimateHealUse(*)
 {
     global
-    Sleep TrimateHealDelay
+    Sleep THV.Delay
     ToolTip "Trimate Heal!"
     SetTimer () => ToolTip(), -1900, 10000
-    Send TrimateHealPressKey
-    TrimateHealCount := 0
+    Send THV.PressKey
+    THV.Count := 0
 }
 ArmorSwapUse(*)
 {
     global
-    if (ArmorSwapLastElemType != ArmorSwapElemType && ArmorSwapCanChange = 1)
+    if (ASV.LastElemType != ASV.ElemType && ASV.CanChange = 1)
     {
-        Sleep ArmorSwapDelay
+        Sleep ASV.Delay
         ToolTip "Armor Swap!"
         SetTimer () => ToolTip(), -1900, 10000
-        If (ArmorSwapElemType = 1)
+        If (ASV.ElemType = 1)
         {
-            ArmorSwapPressKey := ArmorSwapElemFirePressKey
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ArmorSwapElemColor.Fire))
-        } Else If (ArmorSwapElemType = 2)
+            ArmorSwapPressKey := ASV.PressKey[1]
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[1]))
+        } Else If (ASV.ElemType = 2)
         {
-            ArmorSwapPressKey := ArmorSwapElemIcePressKey
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ArmorSwapElemColor.Ice))
-        } Else If (ArmorSwapElemType = 3)
+            ArmorSwapPressKey := ASV.PressKey[2]
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[2]))
+        } Else If (ASV.ElemType = 3)
         {
-            ArmorSwapPressKey := ArmorSwapElemLightningPressKey
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ArmorSwapElemColor.Lightning))
-        } Else If (ArmorSwapElemType = 4)
+            ArmorSwapPressKey := ASV.PressKey[3]
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[3]))
+        } Else If (ASV.ElemType = 4)
         {
-            ArmorSwapPressKey := ArmorSwapElemGroundPressKey
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ArmorSwapElemColor.Ground))
-        } Else If (ArmorSwapElemType = 5)
+            ArmorSwapPressKey := ASV.PressKey[4]
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[4]))
+        } Else If (ASV.ElemType = 5)
         {
-            ArmorSwapPressKey := ArmorSwapElemDarkPressKey
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ArmorSwapElemColor.Dark))
-        } Else If (ArmorSwapElemType = 6)
+            ArmorSwapPressKey := ASV.PressKey[5]
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[5]))
+        } Else If (ASV.ElemType = 6)
         {
-            ArmorSwapPressKey := ArmorSwapElemLightPressKey
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ArmorSwapElemColor.Light))
+            ArmorSwapPressKey := ASV.PressKey[6]
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[6]))
         }
         
         Send ArmorSwapPressKey
-        ArmorSwapLastElemType := ArmorSwapElemType
+        ASV.LastElemType := ASV.ElemType
         MProgress_AS.Value := 100
-        ArmorSwapCanChange := 0
-        SetTimer () => ArmorSwapCanChange := 1, -ArmorSwapDurationBeforeNextChange, 10001
-        ; ArmorSwapCount := 0
+        ASV.CanChange := 0
+        SetTimer () => ASV.CanChange := 1, -ASV.DurationBeforeNextChange, 10001
+        ; ASV.Count := 0
     }
 }
 
@@ -867,59 +915,59 @@ RunPSUFR(*)
 }
 
 
-JustAttackAllowMoveWindow(*)
+JAGC_AllowMoveWindow(*)
 {
     global
-    if (JustAttackWindowCanMove = 0)
+    if (JAG.WindowCanMove = 0)
     {
-        JustAttackWindowCanMove := 1
-        Skip_JAResize := 1
-        JA_Gui.Opt("+AlwaysOnTop -Caption -Resize")
+        JAG.WindowCanMove := 1
+        JAG.SkipGuiResize := 1
+        JAG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
         MButton_ShowJA.Text := "Show JA"
     }
     Else
     {
-        JustAttackWindowCanMove := 0
-        Skip_JAResize := 0
-        JA_Gui.Opt("+AlwaysOnTop +Caption +Resize")
+        JAG.WindowCanMove := 0
+        JAG.SkipGuiResize := 0
+        JAG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowJA.Text := "Hide JA"
     }
 }
 
-PhotonChargeAllowMoveWindow(*)
+PCGC_AllowMoveWindow(*)
 {
     global
-    if (PhotonChargeWindowCanMove = 0)
+    if (PCG.WindowCanMove = 0)
     {
-        PhotonChargeWindowCanMove := 1
-        Skip_PCResize := 1
-        PC_Gui.Opt("+AlwaysOnTop -Caption -Resize")
+        PCG.WindowCanMove := 1
+        PCG.SkipGuiResize := 1
+        PCG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
         MButton_ShowPC.Text := "Show PC"
     }
     Else
     {
-        PhotonChargeWindowCanMove := 0
-        Skip_PCResize := 0
-        PC_Gui.Opt("+AlwaysOnTop +Caption +Resize")
+        PCG.WindowCanMove := 0
+        PCG.SkipGuiResize := 0
+        PCG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowPC.Text := "Hide PC"
     }
 }
 
-TrimateHealAllowMoveWindow(*)
+THGC_AllowMoveWindow(*)
 {
     global
-    if (TrimateHealWindowCanMove = 0)
+    if (THG.WindowCanMove = 0)
     {
-        TrimateHealWindowCanMove := 1
-        Skip_THResize := 1
-        TH_Gui.Opt("+AlwaysOnTop -Caption -Resize")
+        THG.WindowCanMove := 1
+        THG.SkipGuiResize := 1
+        THG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
         MButton_ShowTH.Text := "Show TH"
     }
     Else
     {
-        TrimateHealWindowCanMove := 0
-        Skip_THResize := 0
-        TH_Gui.Opt("+AlwaysOnTop +Caption +Resize")
+        THG.WindowCanMove := 0
+        THG.SkipGuiResize := 0
+        THG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowTH.Text := "Hide TH"
     }
 }
@@ -927,266 +975,219 @@ TrimateHealAllowMoveWindow(*)
 ArmorSwapAllowMoveWindow(*)
 {
     global
-    if (ArmorSwapWindowCanMove = 0)
+    if (ASG.WindowCanMove = 0)
     {
-        ArmorSwapWindowCanMove := 1
-        Skip_ASResize := 1
-        AS_Gui.Opt("+AlwaysOnTop -Caption -Resize")
+        ASG.WindowCanMove := 1
+        ASG.SkipGuiResize := 1
+        ASG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
         MButton_ShowAS.Text := "Show AS"
     }
     Else
     {
-        ArmorSwapWindowCanMove := 0
-        Skip_ASResize := 0
-        AS_Gui.Opt("+AlwaysOnTop +Caption +Resize")
+        ASG.WindowCanMove := 0
+        ASG.SkipGuiResize := 0
+        ASG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowAS.Text := "Hide AS"
     }
 }
 
-JustAttackPressKeyChanged(*)
+JAGC_PressKeyChanged(*)
 {
     global
     If (StrLen(MHotkey_JAPressKey.Value) > 0)
     {
-        JustAttackPressKey := ConvertHotKeyToKeyPress(MHotkey_JAPressKey.Value)
+        JAV.PressKey := ConvertHotKeyToKeyPress(MHotkey_JAPressKey.Value)
     }    
 }
-JustAttackFreqChanged(*)
+JAGC_FreqChanged(*)
 {
     global
-    JustAttackFreq := MUpDown_JAFreq.Value
-    SetTimer JustAttackLoop, JustAttackFreq
+    JAV.Freq := MUpDown_JAFreq.Value
+    SetTimer JAV_Loop, JAV.Freq
 }
-JustAttackThreshChanged(*)
+JAGC_ThreshChanged(*)
 {
     global
-    JustAttackThresh := MUpDown_JAThresh.Value
+    JAV.Thresh := MUpDown_JAThresh.Value
 }
-JustAttackDelayChanged(*)
+JAGC_DelayChanged(*)
 {
     global
-    JustAttackDelay := MUpDown_JADelay.Value
+    JAV.Delay := MUpDown_JADelay.Value
 }
-JustAttackVertChanged(*)
+JAGC_VertChanged(*)
 {
     global
-    temp_Skip_JAResize := Skip_JAResize
-    Skip_JAResize := 0
-    JA_Gui.GetPos( &X, &Y )
+    local TempSkipGuiResize := JAG.SkipGuiResize
+    JAG.SkipGuiResize := 0
+    JAG.GUI.GetPos( &X, &Y )
     If (MUpDown_JAVert.Value > 0)
     {
         Y := Y - 1
     } Else If (MUpDown_JAVert.Value < 0) {
         Y := Y + 1
     }
-    JA_Gui.Move( X, Y )
+    JAG.GUI.Move( X, Y )
     MUpDown_JAVert.Value := 0
-    Skip_JAResize := temp_Skip_JAResize
+    JAG.SkipGuiResize := TempSkipGuiResize
 }
-JustAttackHorzChanged(*)
+JAGC_HorzChanged(*)
 {
     global
-    temp_Skip_JAResize := Skip_JAResize
-    Skip_JAResize := 0
-    JA_Gui.GetPos( &X, &Y )
+    local TempSkipGuiResize := JAG.SkipGuiResize
+    JAG.SkipGuiResize := 0
+    JAG.GUI.GetPos( &X, &Y )
     If (MUpDown_JAHorz.Value > 0)
     {
         X := X + 1
     } Else If (MUpDown_JAHorz.Value < 0) {
         X := X - 1
     }
-    JA_Gui.Move( X, Y )
+    JAG.GUI.Move( X, Y )
     MUpDown_JAHorz.Value := 0
-    Skip_JAResize := temp_Skip_JAResize
+    JAG.SkipGuiResize := TempSkipGuiResize
 }
 
-PhotonChargePressKeyChanged(*)
+PCGC_PressKeyChanged(*)
 {
     global
     If (StrLen(MHotkey_PCPressKey.Value) > 0)
     {
-        PhotonChargePressKey := ConvertHotKeyToKeyPress(MHotkey_PCPressKey.Value)
+        PCV.PressKey := ConvertHotKeyToKeyPress(MHotkey_PCPressKey.Value)
     }
 }
-PhotonChargeFreqChanged(*)
+PCGC_FreqChanged(*)
 {
     global
-    PhotonChargeFreq := MUpDown_PCFreq.Value
-    SetTimer PhotonChargeLoop, PhotonChargeFreq
+    PCV.Freq := MUpDown_PCFreq.Value
+    SetTimer PCV_Loop, PCV.Freq
 }
-PhotonChargeTrigThreshChanged(*)
+PCGC_TrigThreshChanged(*)
 {
     global
-    PhotonChargeTrigThresh := MUpDown_PCTrigThresh.Value
+    PCV.TrigThresh := MUpDown_PCTrigThresh.Value
 }
-PhotonChargePPThreshChanged(*)
+PCGC_PPThreshChanged(*)
 {
     global
-    PhotonChargePPThresh := MUpDown_PCPPThresh.Value
+    PCV.PPThresh := MUpDown_PCPPThresh.Value
 }
-PhotonChargeDelayChanged(*)
+PCGC_DelayChanged(*)
 {
     global
-    PhotonChargeDelay := MUpDown_PCDelay.Value
+    PCV.Delay := MUpDown_PCDelay.Value
 }
-PhotonChargeVertChanged(*)
+PCGC_VertChanged(*)
 {
     global
-    temp_Skip_PCResize := Skip_PCResize
-    Skip_PCResize := 0
-    PC_Gui.GetPos( &X, &Y )
+    local TempSkipGuiResize := PCG.SkipGuiResize
+    PCG.SkipGuiResize := 0
+    PCG.GUI.GetPos( &X, &Y )
     If (MUpDown_PCVert.Value > 0)
     {
         Y := Y - 1
     } Else If (MUpDown_PCVert.Value < 0) {
         Y := Y + 1
     }
-    PC_Gui.Move( X, Y )
+    PCG.GUI.Move( X, Y )
     MUpDown_PCVert.Value := 0
-    Skip_PCResize := temp_Skip_PCResize
+    PCG.SkipGuiResize := TempSkipGuiResize
 }
-PhotonChargeHorzChanged(*)
+PCGC_HorzChanged(*)
 {
     global
-    temp_Skip_PCResize := Skip_PCResize
-    Skip_PCResize := 0
-    PC_Gui.GetPos( &X, &Y )
+    local TempSkipGuiResize := PCG.SkipGuiResize
+    PCG.SkipGuiResize := 0
+    PCG.GUI.GetPos( &X, &Y )
     If (MUpDown_PCHorz.Value > 0)
     {
         X := X + 1
     } Else If (MUpDown_PCHorz.Value < 0) {
         X := X - 1
     }
-    PC_Gui.Move( X, Y )
+    PCG.GUI.Move( X, Y )
     MUpDown_PCHorz.Value := 0
-    Skip_PCResize := temp_Skip_PCResize
+    PCG.SkipGuiResize := TempSkipGuiResize
 }
 
-TrimateHealPressKeyChanged(*)
+THGC_PressKeyChanged(*)
 {
     global
     If (StrLen(MHotkey_THPressKey.Value) > 0)
     {
-        TrimateHealPressKey := ConvertHotKeyToKeyPress(MHotkey_THPressKey.Value)
+        THV.PressKey := ConvertHotKeyToKeyPress(MHotkey_THPressKey.Value)
     }    
 }
-TrimateHealFreqChanged(*)
+THGC_FreqChanged(*)
 {
     global
-    TrimateHealFreq := MUpDown_THFreq.Value
-    SetTimer TrimateHealLoop, TrimateHealFreq
+    THV.Freq := MUpDown_THFreq.Value
+    SetTimer THV_Loop, THV.Freq
 }
-TrimateHealTrigThreshChanged(*)
+THGC_TrigThreshChanged(*)
 {
     global
-    TrimateHealTrigThresh := MUpDown_THTrigThresh.Value
+    THV.TrigThresh := MUpDown_THTrigThresh.Value
 }
-TrimateHealThreshChanged(*)
+THGC_HPThreshChanged(*)
 {
     global
-    TrimateHealHPThresh := MUpDown_THHPThresh.Value
+    THV.HPThresh := MUpDown_THHPThresh.Value
 }
-TrimateHealDelayChanged(*)
+THGC_DelayChanged(*)
 {
     global
-    TrimateHealDelay := MUpDown_THDelay.Value
+    THV.Delay := MUpDown_THDelay.Value
 }
-TrimateHealVertChanged(*)
+THGC_VertChanged(*)
 {
     global
-    temp_Skip_THResize := Skip_THResize
-    Skip_THResize := 0
-    TH_Gui.GetPos( &X, &Y )
+    local TempSkipGuiResize := THG.SkipGuiResize
+    THG.SkipGuiResize := 0
+    THG.GUI.GetPos( &X, &Y )
     If (MUpDown_THVert.Value > 0)
     {
         Y := Y - 1
     } Else If (MUpDown_THVert.Value < 0) {
         Y := Y + 1
     }
-    TH_Gui.Move( X, Y )
+    THG.GUI.Move( X, Y )
     MUpDown_THVert.Value := 0
-    Skip_THResize := temp_Skip_THResize
+    THG.SkipGuiResize := TempSkipGuiResize
 }
-TrimateHealHorzChanged(*)
+THGC_HorzChanged(*)
 {
     global
-    temp_Skip_THResize := Skip_THResize
-    Skip_THResize := 0
-    TH_Gui.GetPos( &X, &Y )
+    local TempSkipGuiResize := THG.SkipGuiResize
+    THG.SkipGuiResize := 0
+    THG.GUI.GetPos( &X, &Y )
     If (MUpDown_THHorz.Value > 0)
     {
         X := X + 1
     } Else If (MUpDown_THHorz.Value < 0) {
         X := X - 1
     }
-    TH_Gui.Move( X, Y )
+    THG.GUI.Move( X, Y )
     MUpDown_THHorz.Value := 0
-    Skip_THResize := temp_Skip_THResize
+    THG.SkipGuiResize := TempSkipGuiResize
 }
 
-ArmorSwapElemFirePressKeyChanged(*)
+
+ASGC_FreqChanged(*)
 {
     global
-    If (StrLen(MHotkey_ASPressKeyElemFire.Value) > 0)
-    {
-        ArmorSwapElemFirePressKey := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemFire.Value)
-    }    
+    ASV.Freq := MUpDown_ASFreq.Value
+    SetTimer ASV_Loop, ASV.Freq
 }
-ArmorSwapElemIcePressKeyChanged(*)
+ASGC_TrigThreshChanged(*)
 {
     global
-    If (StrLen(MHotkey_ASPressKeyElemIce.Value) > 0)
-    {
-        ArmorSwapElemIcePressKey := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemIce.Value)
-    }    
+    ASV.TrigThresh := MUpDown_ASTrigThresh.Value
 }
-ArmorSwapElemLightningPressKeyChanged(*)
+ASGC_DetectionVariationChanged(*)
 {
     global
-    If (StrLen(MHotkey_ASPressKeyElemLightning.Value) > 0)
-    {
-        ArmorSwapElemLightningPressKey := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLightning.Value)
-    }    
-}
-ArmorSwapElemGroundPressKeyChanged(*)
-{
-    global
-    If (StrLen(MHotkey_ASPressKeyElemGround.Value) > 0)
-    {
-        ArmorSwapElemGroundPressKey := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemGround.Value)
-    }    
-}
-ArmorSwapElemDarkPressKeyChanged(*)
-{
-    global
-    If (StrLen(MHotkey_ASPressKeyElemDark.Value) > 0)
-    {
-        ArmorSwapElemDarkPressKey := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemDark.Value)
-    }    
-}
-ArmorSwapElemLightPressKeyChanged(*)
-{
-    global
-    If (StrLen(MHotkey_ASPressKeyElemLight.Value) > 0)
-    {
-        ArmorSwapElemLightPressKey := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLight.Value)
-    }    
-}
-ArmorSwapFreqChanged(*)
-{
-    global
-    ArmorSwapFreq := MUpDown_ASFreq.Value
-    SetTimer ArmorSwapLoop, ArmorSwapFreq
-}
-ArmorSwapTrigThreshChanged(*)
-{
-    global
-    ArmorSwapTrigThresh := MUpDown_ASTrigThresh.Value
-}
-ArmorSwapDetectionVariationChanged(*)
-{
-    global
-    ArmorSwapDetectionVariation := MUpDown_ASDTVARTN.Value
+    ASV.DetectionVariation := MUpDown_ASDTVARTN.Value
     ArmorSwapColorElemFireUpdate()
     ArmorSwapColorElemIceUpdate()
     ArmorSwapColorElemLightningUpdate()
@@ -1194,177 +1195,225 @@ ArmorSwapDetectionVariationChanged(*)
     ArmorSwapColorElemDarkUpdate()
     ArmorSwapColorElemLightUpdate()
 }
-ArmorSwapDurationNextChgChanged(*)
+ASGC_DurationNextChgChanged(*)
 {
     global
-    ArmorSwapDurationBeforeNextChange := MUpDown_ASDurationNextChg.Value
+    ASV.DurationBeforeNextChange := MUpDown_ASDurationNextChg.Value
 }
-ArmorSwapDelayChanged(*)
+ASGC_DelayChanged(*)
 {
     global
-    ArmorSwapDelay := MUpDown_ASDelay.Value
+    ASV.Delay := MUpDown_ASDelay.Value
 }
-ArmorSwapVertChanged(*)
+ASGC_VertChanged(*)
 {
     global
-    temp_Skip_ASResize := Skip_ASResize
-    Skip_ASResize := 0
-    AS_Gui.GetPos( &X, &Y )
+    local TempSkipGuiResize := ASG.SkipGuiResize
+    ASG.SkipGuiResize := 0
+    ASG.GUI.GetPos( &X, &Y )
     If (MUpDown_ASVert.Value > 0)
     {
         Y := Y - 1
     } Else If (MUpDown_ASVert.Value < 0) {
         Y := Y + 1
     }
-    AS_Gui.Move( X, Y )
+    ASG.GUI.Move( X, Y )
     MUpDown_ASVert.Value := 0
-    Skip_ASResize := temp_Skip_ASResize
+    ASG.SkipGuiResize := TempSkipGuiResize
 }
-ArmorSwapHorzChanged(*)
+ASGC_HorzChanged(*)
 {
     global
-    temp_Skip_ASResize := Skip_ASResize
-    Skip_ASResize := 0
-    AS_Gui.GetPos( &X, &Y )
+    local TempSkipGuiResize := ASG.SkipGuiResize
+    ASG.SkipGuiResize := 0
+    ASG.GUI.GetPos( &X, &Y )
     If (MUpDown_ASHorz.Value > 0)
     {
         X := X + 1
     } Else If (MUpDown_ASHorz.Value < 0) {
         X := X - 1
     }
-    AS_Gui.Move( X, Y )
+    ASG.GUI.Move( X, Y )
     MUpDown_ASHorz.Value := 0
-    Skip_ASResize := temp_Skip_ASResize
+    ASG.SkipGuiResize := TempSkipGuiResize
+}
+ASGC_ElemFirePressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemFire.Value) > 0)
+    {
+        ASV.PressKey[1] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemFire.Value)
+    }    
+}
+ASGC_ElemIcePressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemIce.Value) > 0)
+    {
+        ASV.PressKey[2] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemIce.Value)
+    }    
+}
+ASGC_ElemLightningPressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemLightning.Value) > 0)
+    {
+        ASV.PressKey[3] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLightning.Value)
+    }    
+}
+ASGC_ElemGroundPressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemGround.Value) > 0)
+    {
+        ASV.PressKey[4] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemGround.Value)
+    }    
+}
+ASGC_ElemDarkPressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemDark.Value) > 0)
+    {
+        ASV.PressKey[5] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemDark.Value)
+    }    
+}
+ASGC_ElemLightPressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_ASPressKeyElemLight.Value) > 0)
+    {
+        ASV.PressKey[6] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLight.Value)
+    }    
 }
 ArmorSwapColorElemFireUpdate()
 {
-    MProgress_ASCCFEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Fire,ArmorSwapDetectionVariation))
-    MProgress_ASCCFE.Opt("+c" . Format("{:X}", ArmorSwapElemColor.Fire))
-    MProgress_ASCCFEMN.Opt("+c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Fire,ArmorSwapDetectionVariation))
+    MProgress_ASCCFEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation))
+    MProgress_ASCCFE.Opt("+c" . Format("{:X}", ASV.Color[1]))
+    MProgress_ASCCFEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation))
 }
 ArmorSwapColorRElemFireChanged(*)
 {
-    ArmorSwapElemColor.Fire := UpdateRedComponentFromHexToHexInt(ArmorSwapElemColor.Fire, MUpDown_ASColorRElemFire.Value)
+    ASV.Color[1] := UpdateRedComponentFromHexToHexInt(ASV.Color[1], MUpDown_ASColorRElemFire.Value)
     ArmorSwapColorElemFireUpdate()
 }
 ArmorSwapColorGElemFireChanged(*)
 {
-    ArmorSwapElemColor.Fire := UpdateGreenComponentFromHexToHexInt(ArmorSwapElemColor.Fire, MUpDown_ASColorGElemFire.Value)
+    ASV.Color[1] := UpdateGreenComponentFromHexToHexInt(ASV.Color[1], MUpDown_ASColorGElemFire.Value)
     ArmorSwapColorElemFireUpdate()
 }
 ArmorSwapColorBElemFireChanged(*)
 {
-    ArmorSwapElemColor.Fire := UpdateBlueComponentFromHexToHexInt(ArmorSwapElemColor.Fire, MUpDown_ASColorBElemFire.Value)
+    ASV.Color[1] := UpdateBlueComponentFromHexToHexInt(ASV.Color[1], MUpDown_ASColorBElemFire.Value)
     ArmorSwapColorElemFireUpdate()
 }
 
 ArmorSwapColorElemIceUpdate()
 {
-    MProgress_ASCCIEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Ice,ArmorSwapDetectionVariation))
-    MProgress_ASCCIE.Opt("+c" . Format("{:X}", ArmorSwapElemColor.Ice))
-    MProgress_ASCCIEMN.Opt("+c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Ice,ArmorSwapDetectionVariation))
+    MProgress_ASCCIEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation))
+    MProgress_ASCCIE.Opt("+c" . Format("{:X}", ASV.Color[2]))
+    MProgress_ASCCIEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation))
 }
 ArmorSwapColorRElemIceChanged(*)
 {
-    ArmorSwapElemColor.Ice := UpdateRedComponentFromHexToHexInt(ArmorSwapElemColor.Ice, MUpDown_ASColorRElemIce.Value)
+    ASV.Color[2] := UpdateRedComponentFromHexToHexInt(ASV.Color[2], MUpDown_ASColorRElemIce.Value)
     ArmorSwapColorElemIceUpdate()
 }
 ArmorSwapColorGElemIceChanged(*)
 {
-    ArmorSwapElemColor.Ice := UpdateGreenComponentFromHexToHexInt(ArmorSwapElemColor.Ice, MUpDown_ASColorGElemIce.Value)
+    ASV.Color[2] := UpdateGreenComponentFromHexToHexInt(ASV.Color[2], MUpDown_ASColorGElemIce.Value)
     ArmorSwapColorElemIceUpdate()
 }
 ArmorSwapColorBElemIceChanged(*)
 {
-    ArmorSwapElemColor.Ice := UpdateBlueComponentFromHexToHexInt(ArmorSwapElemColor.Ice, MUpDown_ASColorBElemIce.Value)
+    ASV.Color[2] := UpdateBlueComponentFromHexToHexInt(ASV.Color[2], MUpDown_ASColorBElemIce.Value)
     ArmorSwapColorElemIceUpdate()
 }
 
 ArmorSwapColorElemLightningUpdate()
 {
-    MProgress_ASCCLNEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Lightning,ArmorSwapDetectionVariation))
-    MProgress_ASCCLNE.Opt("+c" . Format("{:X}", ArmorSwapElemColor.Lightning))
-    MProgress_ASCCLNEMN.Opt("+c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Lightning,ArmorSwapDetectionVariation))
+    MProgress_ASCCLNEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation))
+    MProgress_ASCCLNE.Opt("+c" . Format("{:X}", ASV.Color[3]))
+    MProgress_ASCCLNEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation))
 }
 ArmorSwapColorRElemLightningChanged(*)
 {
-    ArmorSwapElemColor.Lightning := UpdateRedComponentFromHexToHexInt(ArmorSwapElemColor.Lightning, MUpDown_ASColorRElemLightning.Value)
+    ASV.Color[3] := UpdateRedComponentFromHexToHexInt(ASV.Color[3], MUpDown_ASColorRElemLightning.Value)
     ArmorSwapColorElemLightningUpdate()
 }
 ArmorSwapColorGElemLightningChanged(*)
 {
-    ArmorSwapElemColor.Lightning := UpdateGreenComponentFromHexToHexInt(ArmorSwapElemColor.Lightning, MUpDown_ASColorGElemLightning.Value)
+    ASV.Color[3] := UpdateGreenComponentFromHexToHexInt(ASV.Color[3], MUpDown_ASColorGElemLightning.Value)
     ArmorSwapColorElemLightningUpdate()
 }
 ArmorSwapColorBElemLightningChanged(*)
 {
-    ArmorSwapElemColor.Lightning := UpdateBlueComponentFromHexToHexInt(ArmorSwapElemColor.Lightning, MUpDown_ASColorBElemLightning.Value)
+    ASV.Color[3] := UpdateBlueComponentFromHexToHexInt(ASV.Color[3], MUpDown_ASColorBElemLightning.Value)
     ArmorSwapColorElemLightningUpdate()
 }
 
 ArmorSwapColorElemGroundUpdate()
 {
-    MProgress_ASCCGEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Ground,ArmorSwapDetectionVariation))
-    MProgress_ASCCGE.Opt("+c" . Format("{:X}", ArmorSwapElemColor.Ground))
-    MProgress_ASCCGEMN.Opt("+c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Ground,ArmorSwapDetectionVariation))
+    MProgress_ASCCGEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation))
+    MProgress_ASCCGE.Opt("+c" . Format("{:X}", ASV.Color[4]))
+    MProgress_ASCCGEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation))
 }
 ArmorSwapColorRElemGroundChanged(*)
 {
-    ArmorSwapElemColor.Ground := UpdateRedComponentFromHexToHexInt(ArmorSwapElemColor.Ground, MUpDown_ASColorRElemGround.Value)
+    ASV.Color[4] := UpdateRedComponentFromHexToHexInt(ASV.Color[4], MUpDown_ASColorRElemGround.Value)
     ArmorSwapColorElemGroundUpdate()
 }
 ArmorSwapColorGElemGroundChanged(*)
 {
-    ArmorSwapElemColor.Ground := UpdateGreenComponentFromHexToHexInt(ArmorSwapElemColor.Ground, MUpDown_ASColorGElemGround.Value)
+    ASV.Color[4] := UpdateGreenComponentFromHexToHexInt(ASV.Color[4], MUpDown_ASColorGElemGround.Value)
     ArmorSwapColorElemGroundUpdate()
 }
 ArmorSwapColorBElemGroundChanged(*)
 {
-    ArmorSwapElemColor.Ground := UpdateBlueComponentFromHexToHexInt(ArmorSwapElemColor.Ground, MUpDown_ASColorBElemGround.Value)
+    ASV.Color[4] := UpdateBlueComponentFromHexToHexInt(ASV.Color[4], MUpDown_ASColorBElemGround.Value)
     ArmorSwapColorElemGroundUpdate()
 }
 
 ArmorSwapColorElemDarkUpdate()
 {
-    MProgress_ASCCDEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Dark,ArmorSwapDetectionVariation))
-    MProgress_ASCCDE.Opt("+c" . Format("{:X}", ArmorSwapElemColor.Dark))
-    MProgress_ASCCDEMN.Opt("+c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Dark,ArmorSwapDetectionVariation))
+    MProgress_ASCCDEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation))
+    MProgress_ASCCDE.Opt("+c" . Format("{:X}", ASV.Color[5]))
+    MProgress_ASCCDEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation))
 }
 ArmorSwapColorRElemDarkChanged(*)
 {
-    ArmorSwapElemColor.Dark := UpdateRedComponentFromHexToHexInt(ArmorSwapElemColor.Dark, MUpDown_ASColorRElemDark.Value)
+    ASV.Color[5] := UpdateRedComponentFromHexToHexInt(ASV.Color[5], MUpDown_ASColorRElemDark.Value)
     ArmorSwapColorElemDarkUpdate()
 }
 ArmorSwapColorGElemDarkChanged(*)
 {
-    ArmorSwapElemColor.Dark := UpdateGreenComponentFromHexToHexInt(ArmorSwapElemColor.Dark, MUpDown_ASColorGElemDark.Value)
+    ASV.Color[5] := UpdateGreenComponentFromHexToHexInt(ASV.Color[5], MUpDown_ASColorGElemDark.Value)
     ArmorSwapColorElemDarkUpdate()
 }
 ArmorSwapColorBElemDarkChanged(*)
 {
-    ArmorSwapElemColor.Dark := UpdateBlueComponentFromHexToHexInt(ArmorSwapElemColor.Dark, MUpDown_ASColorBElemDark.Value)
+    ASV.Color[5] := UpdateBlueComponentFromHexToHexInt(ASV.Color[5], MUpDown_ASColorBElemDark.Value)
     ArmorSwapColorElemDarkUpdate()
 }
 
 ArmorSwapColorElemLightUpdate()
 {
-    MProgress_ASCCLIEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ArmorSwapElemColor.Light,ArmorSwapDetectionVariation))
-    MProgress_ASCCLIE.Opt("+c" . Format("{:X}", ArmorSwapElemColor.Light))
-    MProgress_ASCCLIEMN.Opt("+c" . MinVariationColorFromHexToHexString(ArmorSwapElemColor.Light,ArmorSwapDetectionVariation))
+    MProgress_ASCCLIEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation))
+    MProgress_ASCCLIE.Opt("+c" . Format("{:X}", ASV.Color[6]))
+    MProgress_ASCCLIEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation))
 }
 ArmorSwapColorRElemLightChanged(*)
 {
-    ArmorSwapElemColor.Light := UpdateRedComponentFromHexToHexInt(ArmorSwapElemColor.Light, MUpDown_ASColorRElemLight.Value)
+    ASV.Color[6] := UpdateRedComponentFromHexToHexInt(ASV.Color[6], MUpDown_ASColorRElemLight.Value)
     ArmorSwapColorElemLightUpdate()
 }
 ArmorSwapColorGElemLightChanged(*)
 {
-    ArmorSwapElemColor.Light := UpdateGreenComponentFromHexToHexInt(ArmorSwapElemColor.Light, MUpDown_ASColorGElemLight.Value)
+    ASV.Color[6] := UpdateGreenComponentFromHexToHexInt(ASV.Color[6], MUpDown_ASColorGElemLight.Value)
     ArmorSwapColorElemLightUpdate()
 }
 ArmorSwapColorBElemLightChanged(*)
 {
-    ArmorSwapElemColor.Light := UpdateBlueComponentFromHexToHexInt(ArmorSwapElemColor.Light, MUpDown_ASColorBElemLight.Value)
+    ASV.Color[6] := UpdateBlueComponentFromHexToHexInt(ASV.Color[6], MUpDown_ASColorBElemLight.Value)
     ArmorSwapColorElemLightUpdate()
 }
 
