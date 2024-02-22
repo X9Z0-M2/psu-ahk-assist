@@ -1,5 +1,5 @@
 #Requires AutoHotkey v2
-;@Ahk2Exe-SetVersion 0.0.0.1 
+;@Ahk2Exe-SetVersion 0.0.1.1 
 
 #SingleInstance Force
 #MaxThreadsPerHotkey 2
@@ -26,6 +26,7 @@ SetKeyDelay 50, 40  ; 75ms between keys, 25ms between down/up.
 ;VARS
 global Conf := {}
 Conf.SettingsFile := "psuassist.conf"
+UseInputLockout := false
 
 global JAG := {}
 global JAV := {}
@@ -94,7 +95,7 @@ ASV.DetectionVariation := 12 ; can be 0-255
 ASV.TrigThresh := 2
 ASV.Delay := 0
 ASV.CanChange := 1
-ASV.DurationBeforeNextChange := 10000 ; 15 seconds before can swap again
+ASV.DurationBeforeNextChange := 8000 ; 15 seconds before can swap again
 ASV.ElemType := 0 ; 0=neutral, 1=fire, 2=ice, 3=lightning, 4=ground, 5=dark, 6=light
 ASV.LastElemType := ASV.ElemType
 ASV.LastElemForCount := ASV.ElemType
@@ -139,6 +140,67 @@ ASV.DetectionState := 0 ; 0=new search, 1=recheck find
 ASV.NewDetectTries := 2
 ASG.SkipGuiResize := 0
 ASG.WindowCanMove := 0
+
+global WCG := {}
+global WCV := {}
+WCG.X := 0
+WCG.Y := 0
+WCG.MX := 0
+WCG.MY := 0
+WCG.W := 16
+WCG.H := 1
+WCV.Count := 0
+WCV.Freq := 225
+WCV.DetectionVariation := 5 ; can be 0-255
+WCV.TrigThresh := 2
+WCV.Delay := 0
+WCV.CanChange := 1
+WCV.DurationBeforeNextChange := 1550 ; millisecs  before can swap again 
+WCV.ElemType := 0 ; 0=neutral, 1=fire, 2=ice, 3=lightning, 4=ground, 5=dark, 6=light
+WCV.LastElemType := WCV.ElemType
+WCV.LastElemForCount := WCV.ElemType
+WCV.Color := []
+WCV.HotKey := []
+WCV.PressKey := []
+WCV.TypeText := []
+WCV.TitleText := []
+WCV.ColorLookup :=    Map("Fire",1, "Ice",2, "Lightning",3, "Ground",4, "Dark",5, "Light",6)
+WCV.ColorRevLookup := Map(1,"Fire", 2,"Ice", 3,"Lightning", 4,"Ground", 5,"Dark", 6,"Light")
+WCV.ColorOppositeLookup := Map(1,2, 2,1, 3,4, 4,3, 5,6, 6,5)
+WCV.Color.InsertAt( WCV.ColorLookup["Fire"],      0xFE7878 )
+WCV.Color.InsertAt( WCV.ColorLookup["Ice"],       0x7D7DFF )
+WCV.Color.InsertAt( WCV.ColorLookup["Lightning"], 0xFFFF32 )
+WCV.Color.InsertAt( WCV.ColorLookup["Ground"],    0xFF8C00 )
+WCV.Color.InsertAt( WCV.ColorLookup["Dark"],      0xFF8CFF )
+WCV.Color.InsertAt( WCV.ColorLookup["Light"],     0xFFCDB4 )
+WCV.HotKey.InsertAt( WCV.ColorLookup["Fire"],      "+F7" )
+WCV.HotKey.InsertAt( WCV.ColorLookup["Ice"],       "+F8" )
+WCV.HotKey.InsertAt( WCV.ColorLookup["Lightning"], "+F9" )
+WCV.HotKey.InsertAt( WCV.ColorLookup["Ground"],    "+F10" )
+WCV.HotKey.InsertAt( WCV.ColorLookup["Dark"],      "+F11" )
+WCV.HotKey.InsertAt( WCV.ColorLookup["Light"],     "+F12" )
+WCV.TypeText.InsertAt( WCV.ColorLookup["Fire"],      "/wp 1" )
+WCV.TypeText.InsertAt( WCV.ColorLookup["Ice"],       "/wp 2" )
+WCV.TypeText.InsertAt( WCV.ColorLookup["Lightning"], "/wp 3" )
+WCV.TypeText.InsertAt( WCV.ColorLookup["Ground"],    "/wp 4" )
+WCV.TypeText.InsertAt( WCV.ColorLookup["Dark"],      "/wp 5" )
+WCV.TypeText.InsertAt( WCV.ColorLookup["Light"],     "/wp 6" )
+WCV.TitleText.InsertAt( WCV.ColorLookup["Fire"],      "WC FIRE" )
+WCV.TitleText.InsertAt( WCV.ColorLookup["Ice"],       "WC ICE" )
+WCV.TitleText.InsertAt( WCV.ColorLookup["Lightning"], "WC LIGHTNING" )
+WCV.TitleText.InsertAt( WCV.ColorLookup["Ground"],    "WC GROUND" )
+WCV.TitleText.InsertAt( WCV.ColorLookup["Dark"],      "WC DARK" )
+WCV.TitleText.InsertAt( WCV.ColorLookup["Light"],     "WC LIGHT" )
+Loop 6
+{
+    WCV.PressKey.InsertAt( A_Index, ConvertHotKeyToKeyPress(WCV.HotKey[A_Index]) )
+}
+WCV.InputMode := 2 ; 1= hotkey based, 2= string literal input
+WCV.CurDetectColorIdx := 1
+WCV.DetectionState := 0 ; 0=new search, 1=recheck find
+WCV.NewDetectTries := 2
+WCG.SkipGuiResize := 0
+WCG.WindowCanMove := 0
 
 
 ; TODO: enable and finish settings file loading
@@ -229,7 +291,7 @@ ASG.WindowCanMove := 0
 ; LoadSettings(Conf.SettingsFile)
 
 ; ; Create custom gui to control all script components
-Menu_Gui := Gui("+AlwaysOnTop +MinSize50x50 +MaxSize900x900 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu -DPIScale", "PSU AIO Auto")
+Menu_Gui := Gui("+AlwaysOnTop +MinSize50x50 +MaxSize900x900 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu -DPIScale", "PSU AIO Assistant")
 Menu_Gui.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
 MButton_StartPSU := Menu_Gui.Add("Button", , "Start PSU")
 MButton_StartPSU.OnEvent("Click", StartPSU)
@@ -239,14 +301,17 @@ MButton_RunPSUFR.OnEvent("Click", RunPSUFR)
 ; MButton_PCUse := Menu_Gui.Add("Button", "XS vPhotonChargeUse", "Use Photon Charge")
 ; MButton_PCUse.OnEvent("Click", PhotonChargeUse)
 MProgress_JA := Menu_Gui.Add("Progress", "XS w100 h10 c0x3A89DB Smooth vJustAttackProgress", -1)
-MProgress_PC := Menu_Gui.Add("Progress", "w100 h18 c0x3A89DB Smooth vPhotonChargeProgress", -1)
-MProgress_TH := Menu_Gui.Add("Progress", "w100 h18 c0x5BD847 Smooth vTrimateHealProgress", -1)
-MProgress_AS := Menu_Gui.Add("Progress", "w100 h18 c0x666666 Smooth vArmorSwapProgress", -1)
-MProgress_ASC := Menu_Gui.Add("Progress", "YS93 XS103 w20 h18 c0x666666 Smooth vArmorSwapCurrent", -1)
+MProgress_PC := Menu_Gui.Add("Progress", "w100 h16 c0x3A89DB Smooth vPhotonChargeProgress", -1)
+MProgress_TH := Menu_Gui.Add("Progress", "w100 h16 c0x5BD847 Smooth vTrimateHealProgress", -1)
+MProgress_AS := Menu_Gui.Add("Progress", "YS89 XS0 w100 h16 c0x666666 Smooth vArmorSwapProgress", -1)
+MProgress_ASC := Menu_Gui.Add("Progress", "YS89 XS103 w20 h16 c0x666666 Smooth vArmorSwapCurrent", -1)
+MProgress_WC := Menu_Gui.Add("Progress", "YS110 XS0 w100 h16 c0x666666 Smooth vWeaponChangeProgress", -1)
+MProgress_WCC := Menu_Gui.Add("Progress", "YS110 XS103 w20 h16 c0x666666 Smooth vWeaponChangeCurrent", -1)
 MProgress_ASC.Value := 100
+MProgress_WCC.Value := 100
 
 
-MTab_Settings := Menu_Gui.Add("Tab3","-Wrap XS w130", ["JA","PC","TH","AS","AS Keys","AS Clrs"])
+MTab_Settings := Menu_Gui.Add("Tab3","-Wrap XS w130", ["JA","PC","TH","AS","AS Keys","AS Clrs","WC","WC Keys","WC Clrs"])
 
 MTab_Settings.UseTab(1)
 MButton_ShowJA := Menu_Gui.Add("Button", "", "Hide JA")
@@ -461,107 +526,339 @@ MinColorWidth := 10
 MinColorPos := MidColorPos - MinColorWidth + 1
 MaxColorWidth := 10
 MaxColorPos := MidColorPos + MidColorWidth - 1
+ASG.ClrChgElementMax := [1,2,3,4,5,6]
+ASG.ClrChgElementCur    := [1,2,3,4,5,6]
+ASG.ClrChgElementMin := [1,2,3,4,5,6]
 Menu_Gui.Add("Text", "Section", "FIRE")
-MProgress_ASCCFEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorFireElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation), -1)
-MProgress_ASCCFEMX.Value := 100
-MProgress_ASCCFE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorFireElement c" . Format("{:X}", ASV.Color[1]), -1)
-MProgress_ASCCFE.Value := 100
-MProgress_ASCCFEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorFireElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation), -1)
-MProgress_ASCCFEMN.Value := 100
-Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemFireChanged)
+ASG.ClrChgElementMax[1] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorFireElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMax[1].Value := 100
+ASG.ClrChgElementCur[1] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorFireElement c" . Format("{:X}", ASV.Color[1]), -1)
+ASG.ClrChgElementCur[1].Value := 100
+ASG.ClrChgElementMin[1] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorFireElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMin[1].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ASGC_RedCompElemFireChanged)
 MUpDown_ASColorRElemFire := Menu_Gui.Add("UpDown", "vASColorRElemFireUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[1]))
-MUpDown_ASColorRElemFire.OnEvent("Change", ArmorSwapColorRElemFireChanged)
-Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemFireChanged)
+MUpDown_ASColorRElemFire.OnEvent("Change", ASGC_RedCompElemFireChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ASGC_GreenCompElemFireChanged)
 MUpDown_ASColorGElemFire := Menu_Gui.Add("UpDown", "vASColorGElemFireUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[1]))
-MUpDown_ASColorGElemFire.OnEvent("Change", ArmorSwapColorGElemFireChanged)
-Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemFireChanged)
+MUpDown_ASColorGElemFire.OnEvent("Change", ASGC_GreenCompElemFireChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ASGC_BlueCompElemFireChanged)
 MUpDown_ASColorBElemFire := Menu_Gui.Add("UpDown", "vASColorBElemFireUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[1]))
-MUpDown_ASColorBElemFire.OnEvent("Change", ArmorSwapColorBElemFireChanged)
+MUpDown_ASColorBElemFire.OnEvent("Change", ASGC_BlueCompElemFireChanged)
 
 Menu_Gui.Add("Text", "Section XS", "ICE")
-MProgress_ASCCIEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorIceElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation), -1)
-MProgress_ASCCIEMX.Value := 100
-MProgress_ASCCIE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorIceElement c" . Format("{:X}", ASV.Color[2]), -1)
-MProgress_ASCCIE.Value := 100
-MProgress_ASCCIEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorIceElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation), -1)
-MProgress_ASCCIEMN.Value := 100
-Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemIceChanged)
+ASG.ClrChgElementMax[2] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorIceElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMax[2].Value := 100
+ASG.ClrChgElementCur[2] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorIceElement c" . Format("{:X}", ASV.Color[2]), -1)
+ASG.ClrChgElementCur[2].Value := 100
+ASG.ClrChgElementMin[2] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorIceElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMin[2].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ASGC_RedCompElemIceChanged)
 MUpDown_ASColorRElemIce := Menu_Gui.Add("UpDown", "vASColorRElemIceUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[2]))
-MUpDown_ASColorRElemIce.OnEvent("Change", ArmorSwapColorRElemIceChanged)
-Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemIceChanged)
+MUpDown_ASColorRElemIce.OnEvent("Change", ASGC_RedCompElemIceChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ASGC_GreenCompElemIceChanged)
 MUpDown_ASColorGElemIce := Menu_Gui.Add("UpDown", "vASColorGElemIceUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[2]))
-MUpDown_ASColorGElemIce.OnEvent("Change", ArmorSwapColorGElemIceChanged)
-Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemIceChanged)
+MUpDown_ASColorGElemIce.OnEvent("Change", ASGC_GreenCompElemIceChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ASGC_BlueCompElemIceChanged)
 MUpDown_ASColorBElemIce := Menu_Gui.Add("UpDown", "vASColorBElemIceUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[2]))
-MUpDown_ASColorBElemIce.OnEvent("Change", ArmorSwapColorBElemIceChanged)
+MUpDown_ASColorBElemIce.OnEvent("Change", ASGC_BlueCompElemIceChanged)
 
 Menu_Gui.Add("Text", "Section XS", "LIGHTNING")
-MProgress_ASCCLNEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorLightningElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation), -1)
-MProgress_ASCCLNEMX.Value := 100
-MProgress_ASCCLNE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorLightningElement c" . Format("{:X}", ASV.Color[3]), -1)
-MProgress_ASCCLNE.Value := 100
-MProgress_ASCCLNEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorLightningElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation), -1)
-MProgress_ASCCLNEMN.Value := 100
-Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemLightningChanged)
+ASG.ClrChgElementMax[3] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorLightningElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMax[3].Value := 100
+ASG.ClrChgElementCur[3] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorLightningElement c" . Format("{:X}", ASV.Color[3]), -1)
+ASG.ClrChgElementCur[3].Value := 100
+ASG.ClrChgElementMin[3] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorLightningElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMin[3].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ASGC_RedCompElemLightningChanged)
 MUpDown_ASColorRElemLightning := Menu_Gui.Add("UpDown", "vASColorRElemLightningUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[3]))
-MUpDown_ASColorRElemLightning.OnEvent("Change", ArmorSwapColorRElemLightningChanged)
-Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemLightningChanged)
+MUpDown_ASColorRElemLightning.OnEvent("Change", ASGC_RedCompElemLightningChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ASGC_GreenCompElemLightningChanged)
 MUpDown_ASColorGElemLightning := Menu_Gui.Add("UpDown", "vASColorGElemLightningUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[3]))
-MUpDown_ASColorGElemLightning.OnEvent("Change", ArmorSwapColorGElemLightningChanged)
-Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemLightningChanged)
+MUpDown_ASColorGElemLightning.OnEvent("Change", ASGC_GreenCompElemLightningChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ASGC_BlueCompElemLightningChanged)
 MUpDown_ASColorBElemLightning := Menu_Gui.Add("UpDown", "vASColorBElemLightningUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[3]))
-MUpDown_ASColorBElemLightning.OnEvent("Change", ArmorSwapColorBElemLightningChanged)
+MUpDown_ASColorBElemLightning.OnEvent("Change", ASGC_BlueCompElemLightningChanged)
 
 Menu_Gui.Add("Text", "Section XS", "GROUND")
-MProgress_ASCCGEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorGroundElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation), -1)
-MProgress_ASCCGEMX.Value := 100
-MProgress_ASCCGE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorGroundElement c" . Format("{:X}", ASV.Color[4]), -1)
-MProgress_ASCCGE.Value := 100
-MProgress_ASCCGEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorGroundElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation), -1)
-MProgress_ASCCGEMN.Value := 100
-Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemGroundChanged)
+ASG.ClrChgElementMax[4] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorGroundElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMax[4].Value := 100
+ASG.ClrChgElementCur[4] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorGroundElement c" . Format("{:X}", ASV.Color[4]), -1)
+ASG.ClrChgElementCur[4].Value := 100
+ASG.ClrChgElementMin[4] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorGroundElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMin[4].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ASGC_RedCompElemGroundChanged)
 MUpDown_ASColorRElemGround := Menu_Gui.Add("UpDown", "vASColorRElemGroundUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[4]))
-MUpDown_ASColorRElemGround.OnEvent("Change", ArmorSwapColorRElemGroundChanged)
-Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemGroundChanged)
+MUpDown_ASColorRElemGround.OnEvent("Change", ASGC_RedCompElemGroundChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ASGC_GreenCompElemGroundChanged)
 MUpDown_ASColorGElemGround := Menu_Gui.Add("UpDown", "vASColorGElemGroundUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[4]))
-MUpDown_ASColorGElemGround.OnEvent("Change", ArmorSwapColorGElemGroundChanged)
-Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemGroundChanged)
+MUpDown_ASColorGElemGround.OnEvent("Change", ASGC_GreenCompElemGroundChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ASGC_BlueCompElemGroundChanged)
 MUpDown_ASColorBElemGround := Menu_Gui.Add("UpDown", "vASColorBElemGroundUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[4]))
-MUpDown_ASColorBElemGround.OnEvent("Change", ArmorSwapColorBElemGroundChanged)
+MUpDown_ASColorBElemGround.OnEvent("Change", ASGC_BlueCompElemGroundChanged)
 
 Menu_Gui.Add("Text", "Section XS", "DARK")
-MProgress_ASCCDEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorDarkElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation), -1)
-MProgress_ASCCDEMX.Value := 100
-MProgress_ASCCDE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorDarkElement c" . Format("{:X}", ASV.Color[5]), -1)
-MProgress_ASCCDE.Value := 100
-MProgress_ASCCDEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorDarkElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation), -1)
-MProgress_ASCCDEMN.Value := 100
-Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemDarkChanged)
+ASG.ClrChgElementMax[5] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorDarkElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMax[5].Value := 100
+ASG.ClrChgElementCur[5] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorDarkElement c" . Format("{:X}", ASV.Color[5]), -1)
+ASG.ClrChgElementCur[5].Value := 100
+ASG.ClrChgElementMin[5] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorDarkElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMin[5].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ASGC_RedCompElemDarkChanged)
 MUpDown_ASColorRElemDark := Menu_Gui.Add("UpDown", "vASColorRElemDarkUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[5]))
-MUpDown_ASColorRElemDark.OnEvent("Change", ArmorSwapColorRElemDarkChanged)
-Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemDarkChanged)
+MUpDown_ASColorRElemDark.OnEvent("Change", ASGC_RedCompElemDarkChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ASGC_GreenCompElemDarkChanged)
 MUpDown_ASColorGElemDark := Menu_Gui.Add("UpDown", "vASColorGElemDarkUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[5]))
-MUpDown_ASColorGElemDark.OnEvent("Change", ArmorSwapColorGElemDarkChanged)
-Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemDarkChanged)
+MUpDown_ASColorGElemDark.OnEvent("Change", ASGC_GreenCompElemDarkChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ASGC_BlueCompElemDarkChanged)
 MUpDown_ASColorBElemDark := Menu_Gui.Add("UpDown", "vASColorBElemDarkUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[5]))
-MUpDown_ASColorBElemDark.OnEvent("Change", ArmorSwapColorBElemDarkChanged)
+MUpDown_ASColorBElemDark.OnEvent("Change", ASGC_BlueCompElemDarkChanged)
 
 Menu_Gui.Add("Text", "Section XS", "LIGHT")
-MProgress_ASCCLIEMX := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorLightElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation), -1)
-MProgress_ASCCLIEMX.Value := 100
-MProgress_ASCCLIE := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorLightElement c" . Format("{:X}", ASV.Color[6]), -1)
-MProgress_ASCCLIE.Value := 100
-MProgress_ASCCLIEMN := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorLightElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation), -1)
-MProgress_ASCCLIEMN.Value := 100
-Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ArmorSwapColorRElemLightChanged)
+ASG.ClrChgElementMax[6] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorLightElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMax[6].Value := 100
+ASG.ClrChgElementCur[6] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vASCurrentColorLightElement c" . Format("{:X}", ASV.Color[6]), -1)
+ASG.ClrChgElementCur[6].Value := 100
+ASG.ClrChgElementMin[6] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vASCurrentColorLightElementMin c" . MinVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation), -1)
+ASG.ClrChgElementMin[6].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", ASGC_RedCompElemLightChanged)
 MUpDown_ASColorRElemLight := Menu_Gui.Add("UpDown", "vASColorRElemLightUpDown Range0-255", RedComponentFromHexAsRGBInt(ASV.Color[6]))
-MUpDown_ASColorRElemLight.OnEvent("Change", ArmorSwapColorRElemLightChanged)
-Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ArmorSwapColorGElemLightChanged)
+MUpDown_ASColorRElemLight.OnEvent("Change", ASGC_RedCompElemLightChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", ASGC_GreenCompElemLightChanged)
 MUpDown_ASColorGElemLight := Menu_Gui.Add("UpDown", "vASColorGElemLightUpDown Range0-255", GreenComponentFromHexAsRGBInt(ASV.Color[6]))
-MUpDown_ASColorGElemLight.OnEvent("Change", ArmorSwapColorGElemLightChanged)
-Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ArmorSwapColorBElemLightChanged)
+MUpDown_ASColorGElemLight.OnEvent("Change", ASGC_GreenCompElemLightChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", ASGC_BlueCompElemLightChanged)
 MUpDown_ASColorBElemLight := Menu_Gui.Add("UpDown", "vASColorBElemLightUpDown Range0-255", BlueComponentFromHexAsRGBInt(ASV.Color[6]))
-MUpDown_ASColorBElemLight.OnEvent("Change", ArmorSwapColorBElemLightChanged)
+MUpDown_ASColorBElemLight.OnEvent("Change", ASGC_BlueCompElemLightChanged)
+
+
+
+
+
+MTab_Settings.UseTab(7)
+MButton_ShowWC := Menu_Gui.Add("Button", "", "Hide WC")
+MButton_ShowWC.OnEvent("Click", WeaponChangeAllowMoveWindow)
+
+Menu_Gui.Add("Text", , "Frequency (ms)")
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", WCGC_FreqChanged)
+MUpDown_WCFreq := Menu_Gui.Add("UpDown", "vWCFreqUpDown Range1-1000", WCV.Freq)
+MUpDown_WCFreq.OnEvent("Change", WCGC_FreqChanged)
+
+Menu_Gui.Add("Text", , "Trigger Threshold")
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", WCGC_TrigThreshChanged)
+MUpDown_WCTrigThresh := Menu_Gui.Add("UpDown", "vWCTrigThreshUpDown Range0-50", WCV.TrigThresh)
+MUpDown_WCTrigThresh.OnEvent("Change", WCGC_TrigThreshChanged)
+
+Menu_Gui.Add("Text", , "Input Delay (ms)")
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", WCGC_DelayChanged)
+MUpDown_WCDelay := Menu_Gui.Add("UpDown", "vWCDelayUpDown Range0-500", WCV.Delay)
+MUpDown_WCDelay.OnEvent("Change", WCGC_DelayChanged)
+
+Menu_Gui.Add("Text", , "Time Before Next Swap")
+Menu_Gui.Add("Edit", "w60").OnEvent("Change", WCGC_DurationNextChgChanged)
+MUpDown_WCDurationNextChg := Menu_Gui.Add("UpDown", "vWCDurationNextChgUpDown Range0-60000", WCV.DurationBeforeNextChange)
+MUpDown_WCDurationNextChg.OnEvent("Change", WCGC_DurationNextChgChanged)
+
+Menu_Gui.Add("Text", , "Position Detect Line")
+MUpDown_WCVert := Menu_Gui.Add("UpDown", "-16 H40 vWCVertUpDown Range-1-1", 0)
+MUpDown_WCVert.OnEvent("Change", WCGC_VertChanged)
+MUpDown_WCHorz := Menu_Gui.Add("UpDown", "Y+6 XS35 W45 vWCVHorzUpDown Horz Range-1-1", 0)
+MUpDown_WCHorz.OnEvent("Change", WCGC_HorzChanged)
+
+MTab_Settings.UseTab(8)
+Menu_Gui.Add("Text", , "Input Mode")
+MDDList_WCPressKeyInputMode := Menu_Gui.Add("DropDownList", "w75 Choose" . WCV.InputMode, ["HotKey","TypeText"])
+MDDList_WCPressKeyInputMode.OnEvent("Change", WCGC_PressKeyInputModeChanged)
+Menu_Gui.Add("Text", "Section", "FIRE")
+MHotkey_WCPressKeyElemFire := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemFireHotkey", WCV.HotKey[1])
+MHotkey_WCPressKeyElemFire.OnEvent("Change", WCGC_ElemFirePressKeyChanged)
+MText_WCTypeInputElemFire := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemFireText", WCV.TypeText[1])
+MText_WCTypeInputElemFire.OnEvent("Change", WCGC_ElemFireTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "ICE")
+MHotkey_WCPressKeyElemIce := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemIceHotkey", WCV.HotKey[2])
+MHotkey_WCPressKeyElemIce.OnEvent("Change", WCGC_ElemIcePressKeyChanged)
+MText_WCTypeInputElemIce := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemIceText", WCV.TypeText[2])
+MText_WCTypeInputElemIce.OnEvent("Change", WCGC_ElemIceTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "LIGHTNING")
+MHotkey_WCPressKeyElemLightning := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemLightningHotkey", WCV.HotKey[3])
+MHotkey_WCPressKeyElemLightning.OnEvent("Change", WCGC_ElemLightningPressKeyChanged)
+MText_WCTypeInputElemLightning := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemLightningText", WCV.TypeText[3])
+MText_WCTypeInputElemLightning.OnEvent("Change", WCGC_ElemLightningTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "GROUND")
+MHotkey_WCPressKeyElemGround := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemGroundHotkey", WCV.HotKey[4])
+MHotkey_WCPressKeyElemGround.OnEvent("Change", WCGC_ElemGroundPressKeyChanged)
+MText_WCTypeInputElemGround := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemGroundText", WCV.TypeText[4])
+MText_WCTypeInputElemGround.OnEvent("Change", WCGC_ElemGroundTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "DARK")
+MHotkey_WCPressKeyElemDark := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemDarkHotkey", WCV.HotKey[5])
+MHotkey_WCPressKeyElemDark.OnEvent("Change", WCGC_ElemDarkPressKeyChanged)
+MText_WCTypeInputElemDark := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemDarkText", WCV.TypeText[5])
+MText_WCTypeInputElemDark.OnEvent("Change", WCGC_ElemDarkTypeInputChanged)
+Menu_Gui.Add("Text", "Section", "LIGHT")
+MHotkey_WCPressKeyElemLight := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemLightHotkey", WCV.HotKey[6])
+MHotkey_WCPressKeyElemLight.OnEvent("Change", WCGC_ElemLightPressKeyChanged)
+MText_WCTypeInputElemLight := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemLightText", WCV.TypeText[6])
+MText_WCTypeInputElemLight.OnEvent("Change", WCGC_ElemLightTypeInputChanged)
+        
+WCGC_PressKeyInputModeChanged()
+WCGC_PressKeyInputModeChanged(*)
+{
+    global
+    If (MDDList_WCPressKeyInputMode.Value = 1)
+    {
+        MText_WCTypeInputElemFire.Visible := false
+        MText_WCTypeInputElemIce.Visible := false
+        MText_WCTypeInputElemLightning.Visible := false
+        MText_WCTypeInputElemGround.Visible := false
+        MText_WCTypeInputElemDark.Visible := false
+        MText_WCTypeInputElemLight.Visible := false
+        
+        MHotkey_WCPressKeyElemFire.Visible := true
+        MHotkey_WCPressKeyElemIce.Visible := true
+        MHotkey_WCPressKeyElemLightning.Visible := true
+        MHotkey_WCPressKeyElemGround.Visible := true
+        MHotkey_WCPressKeyElemDark.Visible := true
+        MHotkey_WCPressKeyElemLight.Visible := true
+        WCV.InputMode := 1
+    }
+    Else If (MDDList_WCPressKeyInputMode.Value = 2)
+    {
+        MHotkey_WCPressKeyElemFire.Visible := false
+        MHotkey_WCPressKeyElemIce.Visible := false
+        MHotkey_WCPressKeyElemLightning.Visible := false
+        MHotkey_WCPressKeyElemGround.Visible := false
+        MHotkey_WCPressKeyElemDark.Visible := false
+        MHotkey_WCPressKeyElemLight.Visible := false
+
+        MText_WCTypeInputElemFire.Visible := true
+        MText_WCTypeInputElemIce.Visible := true
+        MText_WCTypeInputElemLightning.Visible := true
+        MText_WCTypeInputElemGround.Visible := true
+        MText_WCTypeInputElemDark.Visible := true
+        MText_WCTypeInputElemLight.Visible := true
+        WCV.InputMode := 2
+    }
+}
+
+MTab_Settings.UseTab(9)
+Menu_Gui.Add("Text", , "Detect Variation 0-255")
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", WCGC_DetectionVariationChanged)
+MUpDown_WCDTVARTN := Menu_Gui.Add("UpDown", "vWCHPDetectionVariationUpDown Range0-255", WCV.DetectionVariation)
+MUpDown_WCDTVARTN.OnEvent("Change", WCGC_DetectionVariationChanged)
+
+MidColorWidth := 20
+MidColorPos := 75
+MinColorWidth := 10
+MinColorPos := MidColorPos - MinColorWidth + 1
+MaxColorWidth := 10
+MaxColorPos := MidColorPos + MidColorWidth - 1
+WCG.ClrChgElementMax := [1,2,3,4,5,6]
+WCG.ClrChgElementCur    := [1,2,3,4,5,6]
+WCG.ClrChgElementMin := [1,2,3,4,5,6]
+Menu_Gui.Add("Text", "Section", "FIRE")
+WCG.ClrChgElementMax[1] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vWCCurrentColorFireElementMax c" . MaxVariationColorFromHexToHexString(WCV.Color[1],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMax[1].Value := 100
+WCG.ClrChgElementCur[1] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vWCCurrentColorFireElement c" . Format("{:X}", WCV.Color[1]), -1)
+WCG.ClrChgElementCur[1].Value := 100
+WCG.ClrChgElementMin[1] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vWCCurrentColorFireElementMin c" . MinVariationColorFromHexToHexString(WCV.Color[1],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMin[1].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", WCGC_RedCompElemFireChanged)
+MUpDown_WCColorRElemFire := Menu_Gui.Add("UpDown", "vWCColorRElemFireUpDown Range0-255", RedComponentFromHexAsRGBInt(WCV.Color[1]))
+MUpDown_WCColorRElemFire.OnEvent("Change", WCGC_RedCompElemFireChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", WCGC_GreenCompElemFireChanged)
+MUpDown_WCColorGElemFire := Menu_Gui.Add("UpDown", "vWCColorGElemFireUpDown Range0-255", GreenComponentFromHexAsRGBInt(WCV.Color[1]))
+MUpDown_WCColorGElemFire.OnEvent("Change", WCGC_GreenCompElemFireChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", WCGC_BlueCompElemFireChanged)
+MUpDown_WCColorBElemFire := Menu_Gui.Add("UpDown", "vWCColorBElemFireUpDown Range0-255", BlueComponentFromHexAsRGBInt(WCV.Color[1]))
+MUpDown_WCColorBElemFire.OnEvent("Change", WCGC_BlueCompElemFireChanged)
+
+Menu_Gui.Add("Text", "Section XS", "ICE")
+WCG.ClrChgElementMax[2] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vWCCurrentColorIceElementMax c" . MaxVariationColorFromHexToHexString(WCV.Color[2],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMax[2].Value := 100
+WCG.ClrChgElementCur[2] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vWCCurrentColorIceElement c" . Format("{:X}", WCV.Color[2]), -1)
+WCG.ClrChgElementCur[2].Value := 100
+WCG.ClrChgElementMin[2] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vWCCurrentColorIceElementMin c" . MinVariationColorFromHexToHexString(WCV.Color[2],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMin[2].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", WCGC_RedCompElemIceChanged)
+MUpDown_WCColorRElemIce := Menu_Gui.Add("UpDown", "vWCColorRElemIceUpDown Range0-255", RedComponentFromHexAsRGBInt(WCV.Color[2]))
+MUpDown_WCColorRElemIce.OnEvent("Change", WCGC_RedCompElemIceChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", WCGC_GreenCompElemIceChanged)
+MUpDown_WCColorGElemIce := Menu_Gui.Add("UpDown", "vWCColorGElemIceUpDown Range0-255", GreenComponentFromHexAsRGBInt(WCV.Color[2]))
+MUpDown_WCColorGElemIce.OnEvent("Change", WCGC_GreenCompElemIceChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", WCGC_BlueCompElemIceChanged)
+MUpDown_WCColorBElemIce := Menu_Gui.Add("UpDown", "vWCColorBElemIceUpDown Range0-255", BlueComponentFromHexAsRGBInt(WCV.Color[2]))
+MUpDown_WCColorBElemIce.OnEvent("Change", WCGC_BlueCompElemIceChanged)
+
+Menu_Gui.Add("Text", "Section XS", "LIGHTNING")
+WCG.ClrChgElementMax[3] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vWCCurrentColorLightningElementMax c" . MaxVariationColorFromHexToHexString(WCV.Color[3],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMax[3].Value := 100
+WCG.ClrChgElementCur[3] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vWCCurrentColorLightningElement c" . Format("{:X}", WCV.Color[3]), -1)
+WCG.ClrChgElementCur[3].Value := 100
+WCG.ClrChgElementMin[3] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vWCCurrentColorLightningElementMin c" . MinVariationColorFromHexToHexString(WCV.Color[3],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMin[3].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", WCGC_RedCompElemLightningChanged)
+MUpDown_WCColorRElemLightning := Menu_Gui.Add("UpDown", "vWCColorRElemLightningUpDown Range0-255", RedComponentFromHexAsRGBInt(WCV.Color[3]))
+MUpDown_WCColorRElemLightning.OnEvent("Change", WCGC_RedCompElemLightningChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", WCGC_GreenCompElemLightningChanged)
+MUpDown_WCColorGElemLightning := Menu_Gui.Add("UpDown", "vWCColorGElemLightningUpDown Range0-255", GreenComponentFromHexAsRGBInt(WCV.Color[3]))
+MUpDown_WCColorGElemLightning.OnEvent("Change", WCGC_GreenCompElemLightningChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", WCGC_BlueCompElemLightningChanged)
+MUpDown_WCColorBElemLightning := Menu_Gui.Add("UpDown", "vWCColorBElemLightningUpDown Range0-255", BlueComponentFromHexAsRGBInt(WCV.Color[3]))
+MUpDown_WCColorBElemLightning.OnEvent("Change", WCGC_BlueCompElemLightningChanged)
+
+Menu_Gui.Add("Text", "Section XS", "GROUND")
+WCG.ClrChgElementMax[4] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vWCCurrentColorGroundElementMax c" . MaxVariationColorFromHexToHexString(WCV.Color[4],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMax[4].Value := 100
+WCG.ClrChgElementCur[4] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vWCCurrentColorGroundElement c" . Format("{:X}", WCV.Color[4]), -1)
+WCG.ClrChgElementCur[4].Value := 100
+WCG.ClrChgElementMin[4] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vWCCurrentColorGroundElementMin c" . MinVariationColorFromHexToHexString(WCV.Color[4],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMin[4].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", WCGC_RedCompElemGroundChanged)
+MUpDown_WCColorRElemGround := Menu_Gui.Add("UpDown", "vWCColorRElemGroundUpDown Range0-255", RedComponentFromHexAsRGBInt(WCV.Color[4]))
+MUpDown_WCColorRElemGround.OnEvent("Change", WCGC_RedCompElemGroundChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", WCGC_GreenCompElemGroundChanged)
+MUpDown_WCColorGElemGround := Menu_Gui.Add("UpDown", "vWCColorGElemGroundUpDown Range0-255", GreenComponentFromHexAsRGBInt(WCV.Color[4]))
+MUpDown_WCColorGElemGround.OnEvent("Change", WCGC_GreenCompElemGroundChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", WCGC_BlueCompElemGroundChanged)
+MUpDown_WCColorBElemGround := Menu_Gui.Add("UpDown", "vWCColorBElemGroundUpDown Range0-255", BlueComponentFromHexAsRGBInt(WCV.Color[4]))
+MUpDown_WCColorBElemGround.OnEvent("Change", WCGC_BlueCompElemGroundChanged)
+
+Menu_Gui.Add("Text", "Section XS", "DARK")
+WCG.ClrChgElementMax[5] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vWCCurrentColorDarkElementMax c" . MaxVariationColorFromHexToHexString(WCV.Color[5],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMax[5].Value := 100
+WCG.ClrChgElementCur[5] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vWCCurrentColorDarkElement c" . Format("{:X}", WCV.Color[5]), -1)
+WCG.ClrChgElementCur[5].Value := 100
+WCG.ClrChgElementMin[5] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vWCCurrentColorDarkElementMin c" . MinVariationColorFromHexToHexString(WCV.Color[5],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMin[5].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", WCGC_RedCompElemDarkChanged)
+MUpDown_WCColorRElemDark := Menu_Gui.Add("UpDown", "vWCColorRElemDarkUpDown Range0-255", RedComponentFromHexAsRGBInt(WCV.Color[5]))
+MUpDown_WCColorRElemDark.OnEvent("Change", WCGC_RedCompElemDarkChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", WCGC_GreenCompElemDarkChanged)
+MUpDown_WCColorGElemDark := Menu_Gui.Add("UpDown", "vWCColorGElemDarkUpDown Range0-255", GreenComponentFromHexAsRGBInt(WCV.Color[5]))
+MUpDown_WCColorGElemDark.OnEvent("Change", WCGC_GreenCompElemDarkChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", WCGC_BlueCompElemDarkChanged)
+MUpDown_WCColorBElemDark := Menu_Gui.Add("UpDown", "vWCColorBElemDarkUpDown Range0-255", BlueComponentFromHexAsRGBInt(WCV.Color[5]))
+MUpDown_WCColorBElemDark.OnEvent("Change", WCGC_BlueCompElemDarkChanged)
+
+Menu_Gui.Add("Text", "Section XS", "LIGHT")
+WCG.ClrChgElementMax[6] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vWCCurrentColorLightElementMax c" . MaxVariationColorFromHexToHexString(WCV.Color[6],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMax[6].Value := 100
+WCG.ClrChgElementCur[6] := Menu_Gui.Add("Progress", "YS XS" . MidColorPos . " w" . MidColorWidth . " h14 Smooth vWCCurrentColorLightElement c" . Format("{:X}", WCV.Color[6]), -1)
+WCG.ClrChgElementCur[6].Value := 100
+WCG.ClrChgElementMin[6] := Menu_Gui.Add("Progress", "YS XS" . MaxColorPos . " w" . MaxColorWidth . " h14 Smooth vWCCurrentColorLightElementMin c" . MinVariationColorFromHexToHexString(WCV.Color[6],WCV.DetectionVariation), -1)
+WCG.ClrChgElementMin[6].Value := 100
+Menu_Gui.Add("Edit", "Section XS w40").OnEvent("Change", WCGC_RedCompElemLightChanged)
+MUpDown_WCColorRElemLight := Menu_Gui.Add("UpDown", "vWCColorRElemLightUpDown Range0-255", RedComponentFromHexAsRGBInt(WCV.Color[6]))
+MUpDown_WCColorRElemLight.OnEvent("Change", WCGC_RedCompElemLightChanged)
+Menu_Gui.Add("Edit", "YS XS40 w40").OnEvent("Change", WCGC_GreenCompElemLightChanged)
+MUpDown_WCColorGElemLight := Menu_Gui.Add("UpDown", "vWCColorGElemLightUpDown Range0-255", GreenComponentFromHexAsRGBInt(WCV.Color[6]))
+MUpDown_WCColorGElemLight.OnEvent("Change", WCGC_GreenCompElemLightChanged)
+Menu_Gui.Add("Edit", "YS XS80 w40").OnEvent("Change", WCGC_BlueCompElemLightChanged)
+MUpDown_WCColorBElemLight := Menu_Gui.Add("UpDown", "vWCColorBElemLightUpDown Range0-255", BlueComponentFromHexAsRGBInt(WCV.Color[6]))
+MUpDown_WCColorBElemLight.OnEvent("Change", WCGC_BlueCompElemLightChanged)
+
+
+
 
 
 MTab_Settings.UseTab(0)
@@ -596,6 +893,13 @@ ASG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transpare
 ASG.GUI.OnEvent("Size", GUI_Resize )
 ASG.GUI.Show("W" . ASG.W . " H" . ASG.H)
 WinSetTransColor(ASG.GUI.BackColor , ASG.GUI.Hwnd)
+
+; ; Create custom gui for enemy element type detection to armor swap
+WCG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "WC")
+WCG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
+WCG.GUI.OnEvent("Size", GUI_Resize )
+WCG.GUI.Show("W" . WCG.W . " H" . WCG.H)
+WinSetTransColor(WCG.GUI.BackColor , WCG.GUI.Hwnd)
 
 ; function to update the position and size of custom guis when changed
 GUI_Resize(GuiObj, MinMax, Width, Height)
@@ -652,6 +956,19 @@ GUI_Resize(GuiObj, MinMax, Width, Height)
             ASG.MY := ASG.Y + ASG.H
         }
     }
+    Else If (WCG.GUI = GuiObj)
+    {
+        If (WCG.SkipGuiResize = 0)
+        {
+            WCG.GUI.GetClientPos(&X, &Y, &W, &H)
+            WCG.X := X
+            WCG.Y := Y
+            WCG.W := W
+            WCG.H := H
+            WCG.MX := WCG.X + WCG.W
+            WCG.MY := WCG.Y + WCG.H
+        }
+    }
     Else
     {
         GUI_Resized := false
@@ -669,21 +986,25 @@ GUI_Resize(GuiObj, MinMax, Width, Height)
 OnMessage(0x03, GuiRepositionedHook)
 GuiRepositionedHook(wParam, lParam, msg, hwnd)
 {
-    if( hwnd = JAG.GUI.Hwnd )
+    If( hwnd = JAG.GUI.Hwnd )
     {
         GUI_Resize(JAG.GUI, 0, 0, 0)
     }
-    else if ( hwnd = PCG.GUI.Hwnd )
+    Else If ( hwnd = PCG.GUI.Hwnd )
     {
         GUI_Resize(PCG.GUI, 0, 0, 0)
     }
-    else if ( hwnd = THG.GUI.Hwnd )
+    Else If ( hwnd = THG.GUI.Hwnd )
     {
         GUI_Resize(THG.GUI, 0, 0, 0)
     }
-    else if ( hwnd = ASG.GUI.Hwnd )
+    Else If ( hwnd = ASG.GUI.Hwnd )
     {
         GUI_Resize(ASG.GUI, 0, 0, 0)
+    }
+    Else If ( hwnd = WCG.GUI.Hwnd )
+    {
+        GUI_Resize(WCG.GUI, 0, 0, 0)
     }
 }
 ; Init position and size values
@@ -691,6 +1012,7 @@ GUI_Resize(JAG.GUI, 0, 0, 0)
 GUI_Resize(PCG.GUI, 0, 0, 0)
 GUI_Resize(THG.GUI, 0, 0, 0)
 GUI_Resize(ASG.GUI, 0, 0, 0)
+GUI_Resize(WCG.GUI, 0, 0, 0)
 
 
 
@@ -724,11 +1046,16 @@ JAV_Loop()
     {
         MProgress_JA.Opt("+c0x00FF00")
         MProgress_JA.Value := 100
-        Sleep JAV.Delay
-        ToolTip "Just Attack!"
-        SetTimer () => ToolTip(), -200, 10000
-        Send JAV.PressKey
-        JAV.Count := 0
+        if (UseInputLockout != true)
+        {
+            UseInputLockout := true
+            Sleep JAV.Delay
+            ToolTip "Just Attack!"
+            SetTimer () => ToolTip(), -200, 10000
+            Send JAV.PressKey
+            JAV.Count := 0
+            UseInputLockout := false
+        }
     }
     return True
 }
@@ -877,45 +1204,113 @@ ASV_ColorEval( ColorIdx )
     }
     Return False
 }
-IntWrap(kX, LB, UB)
+
+; Auto Weapon Change
+SetTimer WCV_Loop, WCV.Freq
+WCV_Loop()
 {
-    Rang := UB - LB + 1
-    If (kX < LB)
+    global
+    local WCV_ColorDetected := false
+    local WCV_DetectTries := 1
+    If (WCV.DetectionState = 0)
     {
-        kX := kX + Rang * ((LB - kX) / Rang + 1)
+        WCV_DetectTries := WCV.NewDetectTries
     }
 
-    return LB + Mod((kX - LB), Rang)
+    Loop WCV_DetectTries
+    {
+        If ( WCV_ColorEval( WCV.CurDetectColorIdx ) )
+        {
+            WCV_ColorDetected := true
+            WCV.DetectionState := 1
+            Break
+        }
+        WCV.CurDetectColorIdx := IntWrap(WCV.CurDetectColorIdx + 1, 1, 6)
+    }
+
+    If (WCV_ColorDetected = false)
+    {
+        If (WCV.Count > 0)
+        {
+            ToolTip "Time WeaponChange" WCV.Count
+            SetTimer () => ToolTip(), -1000, 10000
+        }
+        WCV.Count := 0
+        MProgress_WC.Value := -1
+        WCG.GUI.Title := "WC"
+        WCV.ElemType := 0
+        WCV.DetectionState := 0
+    }
+; ToolTip "Pixel Search" WCV.Count " " WCG.X ":" WCG.Y " " WCG.W ":" WCG.H " FOUND:" WC_Px ":" WC_Py " " WCV.ElemType
+    If (WCV.Count >= WCV.TrigThresh)
+    {
+        WeaponChangeUse()
+    }
+    return True
+}
+WCV_ColorEval( ColorIdx )
+{
+    global
+    If (PixelSearch(&WC_Px, &WC_Py, WCG.MX, WCG.MY, WCG.X, WCG.Y, WCV.Color[ColorIdx], WCV.DetectionVariation ))
+    {
+        MProgress_WC.Opt("+c0x" . Format("{:X}", WCV.Color[ColorIdx]))
+        WCG.GUI.Title := WCV.TitleText[ColorIdx]
+        WCV.ElemType := ColorIdx
+        If (WCV.LastElemForCount = 0 || WCV.ElemType = WCV.LastElemForCount)
+        {
+            MProgress_WC.Value := Min(22 + (WCV.Count / WCV.TrigThresh) * (100-22), 100)
+            WCV.Count := WCV.Count + 1
+        }
+        Else
+        {
+            WCV.Count := 0
+            MProgress_WC.Value := Min(22 + (WCV.Count / WCV.TrigThresh) * (100-22), 100)
+        }
+        WCV.LastElemForCount := WCV.ElemType
+        Return True
+    }
+    Return False
 }
 
 
 PhotonChargeUse(*)
 {
     global
-    Sleep PCV.Delay
-    ToolTip "Photon Charge!"
-    SetTimer () => ToolTip(), -1900, 10000
-    Send PCV.PressKey
-    PCV.Count := 0
+    if (UseInputLockout != true)
+    {
+        UseInputLockout := true
+        Sleep PCV.Delay
+        ToolTip "Photon Charge!"
+        SetTimer () => ToolTip(), -1900, 10000
+        Send PCV.PressKey
+        PCV.Count := 0
+        UseInputLockout := false
+    }
 }
 TrimateHealUse(*)
 {
     global
-    Sleep THV.Delay
-    ToolTip "Trimate Heal!"
-    SetTimer () => ToolTip(), -1900, 10000
-    Send THV.PressKey
-    THV.Count := 0
+    if (UseInputLockout != true)
+    {
+        UseInputLockout := true
+        Sleep THV.Delay
+        ToolTip "Trimate Heal!"
+        SetTimer () => ToolTip(), -1900, 10000
+        Send THV.PressKey
+        THV.Count := 0
+        UseInputLockout := false
+    }
 }
 ArmorSwapUse(*)
 {
     global
-    if (ASV.LastElemType != ASV.ElemType && ASV.CanChange = 1)
+    if (ASV.LastElemType != ASV.ElemType && ASV.CanChange = 1 && UseInputLockout != true)
     {
         Sleep ASV.Delay
         ToolTip "Armor Swap!"
         SetTimer () => ToolTip(), -1900, 10000
         
+        UseInputLockout := true
         local ArmorSwapPressInputted := false
         If (ASV.InputMode = 1)
         {
@@ -929,7 +1324,7 @@ ArmorSwapUse(*)
             ArmorSwapPressInput := ASV.TypeText[ASV.ElemType]
             Send "{Space}"
             Send "{Text}" . ArmorSwapPressInput
-            Send "{Enter}"
+            Send "{Enter}{Enter}{Enter}"
             MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[ASV.ElemType]))
             ArmorSwapPressInputted := true
         }
@@ -941,6 +1336,45 @@ ArmorSwapUse(*)
             SetTimer () => ASV.CanChange := 1, -ASV.DurationBeforeNextChange, 10001
             ; ASV.Count := 0
         }
+        UseInputLockout := false
+    }
+}
+WeaponChangeUse(*)
+{
+    global
+    local ASV_ElemType := ASV.ElemType ; copy variable due to bug with 'multithreading'. There is a small chance the elemtype is 0 after we just checked it...
+    if (ASV_ElemType != 0 && WCV.ElemType != WCV.ColorOppositeLookup[ASV_ElemType] && WCV.CanChange = 1 && UseInputLockout != true)
+    {
+        Sleep WCV.Delay
+        ToolTip "Weapon Change!"
+        SetTimer () => ToolTip(), -1900, 10000
+        
+        UseInputLockout := true
+        local WeaponChangePressInputted := false
+        If (WCV.InputMode = 1)
+        {
+            WeaponChangePressInput := WCV.PressKey[WCV.ColorOppositeLookup[ASV_ElemType]]
+            Send WeaponChangePressInput
+            MProgress_WCC.Opt("+c0x" . Format("{:X}", WCV.Color[WCV.ColorOppositeLookup[ASV_ElemType]]))
+            WeaponChangePressInputted := true
+        }
+        Else If (WCV.InputMode = 2)
+        {
+            WeaponChangePressInput := WCV.TypeText[WCV.ColorOppositeLookup[ASV_ElemType]]
+            Send "{Space}"
+            Send "{Text}" . WeaponChangePressInput
+            Send "{Enter}{Enter}{Enter}"
+            MProgress_WCC.Opt("+c0x" . Format("{:X}", WCV.Color[WCV.ColorOppositeLookup[ASV_ElemType]]))
+            WeaponChangePressInputted := true
+        }
+        If (WeaponChangePressInputted = true)
+        {
+            WCV.LastElemType := WCV.ElemType
+            MProgress_WC.Value := 100
+            WCV.CanChange := 0
+            SetTimer () => WCV.CanChange := 1, -WCV.DurationBeforeNextChange, 10001
+        }
+        UseInputLockout := false
     }
 }
 
@@ -1045,6 +1479,25 @@ ArmorSwapAllowMoveWindow(*)
         ASG.SkipGuiResize := 0
         ASG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowAS.Text := "Hide AS"
+    }
+}
+
+WeaponChangeAllowMoveWindow(*)
+{
+    global
+    if (WCG.WindowCanMove = 0)
+    {
+        WCG.WindowCanMove := 1
+        WCG.SkipGuiResize := 1
+        WCG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
+        MButton_ShowWC.Text := "Show WC"
+    }
+    Else
+    {
+        WCG.WindowCanMove := 0
+        WCG.SkipGuiResize := 0
+        WCG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
+        MButton_ShowWC.Text := "Hide WC"
     }
 }
 
@@ -1245,12 +1698,12 @@ ASGC_DetectionVariationChanged(*)
 {
     global
     ASV.DetectionVariation := MUpDown_ASDTVARTN.Value
-    ArmorSwapColorElemFireUpdate()
-    ArmorSwapColorElemIceUpdate()
-    ArmorSwapColorElemLightningUpdate()
-    ArmorSwapColorElemGroundUpdate()
-    ArmorSwapColorElemDarkUpdate()
-    ArmorSwapColorElemLightUpdate()
+    ASGC_ColorElemUpdate(1)
+    ASGC_ColorElemUpdate(2)
+    ASGC_ColorElemUpdate(3)
+    ASGC_ColorElemUpdate(4)
+    ASGC_ColorElemUpdate(5)
+    ASGC_ColorElemUpdate(6)
 }
 ASGC_DurationNextChgChanged(*)
 {
@@ -1392,136 +1845,371 @@ ASGC_ElemLightTypeInputChanged(*)
     }
 }
 
-ArmorSwapColorElemFireUpdate()
+ASGC_ColorElemUpdate(ElemType)
 {
-    MProgress_ASCCFEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation))
-    MProgress_ASCCFE.Opt("+c" . Format("{:X}", ASV.Color[1]))
-    MProgress_ASCCFEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation))
+    ASG.ClrChgElementMax[ElemType].Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[ElemType], ASV.DetectionVariation))
+    ASG.ClrChgElementCur[ElemType].Opt("+c" . Format("{:X}", ASV.Color[ElemType]))
+    ASG.ClrChgElementMin[ElemType].Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[ElemType], ASV.DetectionVariation))
 }
-ArmorSwapColorRElemFireChanged(*)
+ASGC_RedCompElemFireChanged(*)
 {
     ASV.Color[1] := UpdateRedComponentFromHexToHexInt(ASV.Color[1], MUpDown_ASColorRElemFire.Value)
-    ArmorSwapColorElemFireUpdate()
+    ASGC_ColorElemUpdate(1)
 }
-ArmorSwapColorGElemFireChanged(*)
+ASGC_GreenCompElemFireChanged(*)
 {
     ASV.Color[1] := UpdateGreenComponentFromHexToHexInt(ASV.Color[1], MUpDown_ASColorGElemFire.Value)
-    ArmorSwapColorElemFireUpdate()
+    ASGC_ColorElemUpdate(1)
 }
-ArmorSwapColorBElemFireChanged(*)
+ASGC_BlueCompElemFireChanged(*)
 {
     ASV.Color[1] := UpdateBlueComponentFromHexToHexInt(ASV.Color[1], MUpDown_ASColorBElemFire.Value)
-    ArmorSwapColorElemFireUpdate()
+    ASGC_ColorElemUpdate(1)
 }
 
-ArmorSwapColorElemIceUpdate()
-{
-    MProgress_ASCCIEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation))
-    MProgress_ASCCIE.Opt("+c" . Format("{:X}", ASV.Color[2]))
-    MProgress_ASCCIEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[2],ASV.DetectionVariation))
-}
-ArmorSwapColorRElemIceChanged(*)
+ASGC_RedCompElemIceChanged(*)
 {
     ASV.Color[2] := UpdateRedComponentFromHexToHexInt(ASV.Color[2], MUpDown_ASColorRElemIce.Value)
-    ArmorSwapColorElemIceUpdate()
+    ASGC_ColorElemUpdate(2)
 }
-ArmorSwapColorGElemIceChanged(*)
+ASGC_GreenCompElemIceChanged(*)
 {
     ASV.Color[2] := UpdateGreenComponentFromHexToHexInt(ASV.Color[2], MUpDown_ASColorGElemIce.Value)
-    ArmorSwapColorElemIceUpdate()
+    ASGC_ColorElemUpdate(2)
 }
-ArmorSwapColorBElemIceChanged(*)
+ASGC_BlueCompElemIceChanged(*)
 {
     ASV.Color[2] := UpdateBlueComponentFromHexToHexInt(ASV.Color[2], MUpDown_ASColorBElemIce.Value)
-    ArmorSwapColorElemIceUpdate()
+    ASGC_ColorElemUpdate(2)
 }
 
-ArmorSwapColorElemLightningUpdate()
-{
-    MProgress_ASCCLNEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation))
-    MProgress_ASCCLNE.Opt("+c" . Format("{:X}", ASV.Color[3]))
-    MProgress_ASCCLNEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[3],ASV.DetectionVariation))
-}
-ArmorSwapColorRElemLightningChanged(*)
+ASGC_RedCompElemLightningChanged(*)
 {
     ASV.Color[3] := UpdateRedComponentFromHexToHexInt(ASV.Color[3], MUpDown_ASColorRElemLightning.Value)
-    ArmorSwapColorElemLightningUpdate()
+    ASGC_ColorElemUpdate(3)
 }
-ArmorSwapColorGElemLightningChanged(*)
+ASGC_GreenCompElemLightningChanged(*)
 {
     ASV.Color[3] := UpdateGreenComponentFromHexToHexInt(ASV.Color[3], MUpDown_ASColorGElemLightning.Value)
-    ArmorSwapColorElemLightningUpdate()
+    ASGC_ColorElemUpdate(3)
 }
-ArmorSwapColorBElemLightningChanged(*)
+ASGC_BlueCompElemLightningChanged(*)
 {
     ASV.Color[3] := UpdateBlueComponentFromHexToHexInt(ASV.Color[3], MUpDown_ASColorBElemLightning.Value)
-    ArmorSwapColorElemLightningUpdate()
+    ASGC_ColorElemUpdate(3)
 }
 
-ArmorSwapColorElemGroundUpdate()
-{
-    MProgress_ASCCGEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation))
-    MProgress_ASCCGE.Opt("+c" . Format("{:X}", ASV.Color[4]))
-    MProgress_ASCCGEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[4],ASV.DetectionVariation))
-}
-ArmorSwapColorRElemGroundChanged(*)
+ASGC_RedCompElemGroundChanged(*)
 {
     ASV.Color[4] := UpdateRedComponentFromHexToHexInt(ASV.Color[4], MUpDown_ASColorRElemGround.Value)
-    ArmorSwapColorElemGroundUpdate()
+    ASGC_ColorElemUpdate(4)
 }
-ArmorSwapColorGElemGroundChanged(*)
+ASGC_GreenCompElemGroundChanged(*)
 {
     ASV.Color[4] := UpdateGreenComponentFromHexToHexInt(ASV.Color[4], MUpDown_ASColorGElemGround.Value)
-    ArmorSwapColorElemGroundUpdate()
+    ASGC_ColorElemUpdate(4)
 }
-ArmorSwapColorBElemGroundChanged(*)
+ASGC_BlueCompElemGroundChanged(*)
 {
     ASV.Color[4] := UpdateBlueComponentFromHexToHexInt(ASV.Color[4], MUpDown_ASColorBElemGround.Value)
-    ArmorSwapColorElemGroundUpdate()
+    ASGC_ColorElemUpdate(4)
 }
 
-ArmorSwapColorElemDarkUpdate()
-{
-    MProgress_ASCCDEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation))
-    MProgress_ASCCDE.Opt("+c" . Format("{:X}", ASV.Color[5]))
-    MProgress_ASCCDEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[5],ASV.DetectionVariation))
-}
-ArmorSwapColorRElemDarkChanged(*)
+ASGC_RedCompElemDarkChanged(*)
 {
     ASV.Color[5] := UpdateRedComponentFromHexToHexInt(ASV.Color[5], MUpDown_ASColorRElemDark.Value)
-    ArmorSwapColorElemDarkUpdate()
+    ASGC_ColorElemUpdate(5)
 }
-ArmorSwapColorGElemDarkChanged(*)
+ASGC_GreenCompElemDarkChanged(*)
 {
     ASV.Color[5] := UpdateGreenComponentFromHexToHexInt(ASV.Color[5], MUpDown_ASColorGElemDark.Value)
-    ArmorSwapColorElemDarkUpdate()
+    ASGC_ColorElemUpdate(5)
 }
-ArmorSwapColorBElemDarkChanged(*)
+ASGC_BlueCompElemDarkChanged(*)
 {
     ASV.Color[5] := UpdateBlueComponentFromHexToHexInt(ASV.Color[5], MUpDown_ASColorBElemDark.Value)
-    ArmorSwapColorElemDarkUpdate()
+    ASGC_ColorElemUpdate(5)
 }
 
-ArmorSwapColorElemLightUpdate()
-{
-    MProgress_ASCCLIEMX.Opt("+c" . MaxVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation))
-    MProgress_ASCCLIE.Opt("+c" . Format("{:X}", ASV.Color[6]))
-    MProgress_ASCCLIEMN.Opt("+c" . MinVariationColorFromHexToHexString(ASV.Color[6],ASV.DetectionVariation))
-}
-ArmorSwapColorRElemLightChanged(*)
+ASGC_RedCompElemLightChanged(*)
 {
     ASV.Color[6] := UpdateRedComponentFromHexToHexInt(ASV.Color[6], MUpDown_ASColorRElemLight.Value)
-    ArmorSwapColorElemLightUpdate()
+    ASGC_ColorElemUpdate(6)
 }
-ArmorSwapColorGElemLightChanged(*)
+ASGC_GreenCompElemLightChanged(*)
 {
     ASV.Color[6] := UpdateGreenComponentFromHexToHexInt(ASV.Color[6], MUpDown_ASColorGElemLight.Value)
-    ArmorSwapColorElemLightUpdate()
+    ASGC_ColorElemUpdate(6)
 }
-ArmorSwapColorBElemLightChanged(*)
+ASGC_BlueCompElemLightChanged(*)
 {
     ASV.Color[6] := UpdateBlueComponentFromHexToHexInt(ASV.Color[6], MUpDown_ASColorBElemLight.Value)
-    ArmorSwapColorElemLightUpdate()
+    ASGC_ColorElemUpdate(6)
+}
+
+
+WCGC_FreqChanged(*)
+{
+    global
+    WCV.Freq := MUpDown_WCFreq.Value
+    SetTimer WCV_Loop, WCV.Freq
+}
+WCGC_TrigThreshChanged(*)
+{
+    global
+    WCV.TrigThresh := MUpDown_WCTrigThresh.Value
+}
+WCGC_DetectionVariationChanged(*)
+{
+    global
+    WCV.DetectionVariation := MUpDown_WCDTVARTN.Value
+    WCGC_ColorElemUpdate(1)
+    WCGC_ColorElemUpdate(2)
+    WCGC_ColorElemUpdate(3)
+    WCGC_ColorElemUpdate(4)
+    WCGC_ColorElemUpdate(5)
+    WCGC_ColorElemUpdate(6)
+}
+WCGC_DurationNextChgChanged(*)
+{
+    global
+    WCV.DurationBeforeNextChange := MUpDown_WCDurationNextChg.Value
+}
+WCGC_DelayChanged(*)
+{
+    global
+    WCV.Delay := MUpDown_WCDelay.Value
+}
+WCGC_VertChanged(*)
+{
+    global
+    local TempSkipGuiResize := WCG.SkipGuiResize
+    WCG.SkipGuiResize := 0
+    WCG.GUI.GetPos( &X, &Y )
+    If (MUpDown_WCVert.Value > 0)
+    {
+        Y := Y - 1
+    } Else If (MUpDown_WCVert.Value < 0) {
+        Y := Y + 1
+    }
+    WCG.GUI.Move( X, Y )
+    MUpDown_WCVert.Value := 0
+    WCG.SkipGuiResize := TempSkipGuiResize
+}
+WCGC_HorzChanged(*)
+{
+    global
+    local TempSkipGuiResize := WCG.SkipGuiResize
+    WCG.SkipGuiResize := 0
+    WCG.GUI.GetPos( &X, &Y )
+    If (MUpDown_WCHorz.Value > 0)
+    {
+        X := X + 1
+    } Else If (MUpDown_WCHorz.Value < 0) {
+        X := X - 1
+    }
+    WCG.GUI.Move( X, Y )
+    MUpDown_WCHorz.Value := 0
+    WCG.SkipGuiResize := TempSkipGuiResize
+}
+WCGC_ElemFirePressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_WCPressKeyElemFire.Value) > 0)
+    {
+        WCV.PressKey[1] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemFire.Value)
+    }
+}
+WCGC_ElemIcePressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_WCPressKeyElemIce.Value) > 0)
+    {
+        WCV.PressKey[2] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemIce.Value)
+    }
+}
+WCGC_ElemLightningPressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_WCPressKeyElemLightning.Value) > 0)
+    {
+        WCV.PressKey[3] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemLightning.Value)
+    }
+}
+WCGC_ElemGroundPressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_WCPressKeyElemGround.Value) > 0)
+    {
+        WCV.PressKey[4] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemGround.Value)
+    }
+}
+WCGC_ElemDarkPressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_WCPressKeyElemDark.Value) > 0)
+    {
+        WCV.PressKey[5] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemDark.Value)
+    }
+}
+WCGC_ElemLightPressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_WCPressKeyElemLight.Value) > 0)
+    {
+        WCV.PressKey[6] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemLight.Value)
+    }
+}
+
+WCGC_ElemFireTypeInputChanged(*)
+{
+    global
+    If (StrLen(MText_WCTypeInputElemFire.Value) > 0)
+    {
+        WCV.TypeText[1] := MText_WCTypeInputElemFire.Value
+    }
+}
+WCGC_ElemIceTypeInputChanged(*)
+{
+    global
+    If (StrLen(MText_WCTypeInputElemIce.Value) > 0)
+    {
+        WCV.TypeText[2] := MText_WCTypeInputElemIce.Value
+    }
+}
+WCGC_ElemLightningTypeInputChanged(*)
+{
+    global
+    If (StrLen(MText_WCTypeInputElemLightning.Value) > 0)
+    {
+        WCV.TypeText[3] := MText_WCTypeInputElemLightning.Value
+    }
+}
+WCGC_ElemGroundTypeInputChanged(*)
+{
+    global
+    If (StrLen(MText_WCTypeInputElemGround.Value) > 0)
+    {
+        WCV.TypeText[4] := MText_WCTypeInputElemGround.Value
+    }
+}
+WCGC_ElemDarkTypeInputChanged(*)
+{
+    global
+    If (StrLen(MText_WCTypeInputElemDark.Value) > 0)
+    {
+        WCV.TypeText[5] := MText_WCTypeInputElemDark.Value
+    }
+}
+WCGC_ElemLightTypeInputChanged(*)
+{
+    global
+    If (StrLen(MText_WCTypeInputElemLight.Value) > 0)
+    {
+        WCV.TypeText[6] := MText_WCTypeInputElemLight.Value
+    }
+}
+
+WCGC_ColorElemUpdate(ElemType)
+{
+    WCG.ClrChgElementMax[ElemType].Opt("+c" . MaxVariationColorFromHexToHexString(WCV.Color[ElemType], WCV.DetectionVariation))
+    WCG.ClrChgElementCur[ElemType].Opt("+c" . Format("{:X}", WCV.Color[ElemType]))
+    WCG.ClrChgElementMin[ElemType].Opt("+c" . MinVariationColorFromHexToHexString(WCV.Color[ElemType], WCV.DetectionVariation))
+}
+WCGC_RedCompElemFireChanged(*)
+{
+    WCV.Color[1] := UpdateRedComponentFromHexToHexInt(WCV.Color[1], MUpDown_WCColorRElemFire.Value)
+    WCGC_ColorElemUpdate(1)
+}
+WCGC_GreenCompElemFireChanged(*)
+{
+    WCV.Color[1] := UpdateGreenComponentFromHexToHexInt(WCV.Color[1], MUpDown_WCColorGElemFire.Value)
+    WCGC_ColorElemUpdate(1)
+}
+WCGC_BlueCompElemFireChanged(*)
+{
+    WCV.Color[1] := UpdateBlueComponentFromHexToHexInt(WCV.Color[1], MUpDown_WCColorBElemFire.Value)
+    WCGC_ColorElemUpdate(1)
+}
+
+WCGC_RedCompElemIceChanged(*)
+{
+    WCV.Color[2] := UpdateRedComponentFromHexToHexInt(WCV.Color[2], MUpDown_WCColorRElemIce.Value)
+    WCGC_ColorElemUpdate(2)
+}
+WCGC_GreenCompElemIceChanged(*)
+{
+    WCV.Color[2] := UpdateGreenComponentFromHexToHexInt(WCV.Color[2], MUpDown_WCColorGElemIce.Value)
+    WCGC_ColorElemUpdate(2)
+}
+WCGC_BlueCompElemIceChanged(*)
+{
+    WCV.Color[2] := UpdateBlueComponentFromHexToHexInt(WCV.Color[2], MUpDown_WCColorBElemIce.Value)
+    WCGC_ColorElemUpdate(2)
+}
+
+WCGC_RedCompElemLightningChanged(*)
+{
+    WCV.Color[3] := UpdateRedComponentFromHexToHexInt(WCV.Color[3], MUpDown_WCColorRElemLightning.Value)
+    WCGC_ColorElemUpdate(3)
+}
+WCGC_GreenCompElemLightningChanged(*)
+{
+    WCV.Color[3] := UpdateGreenComponentFromHexToHexInt(WCV.Color[3], MUpDown_WCColorGElemLightning.Value)
+    WCGC_ColorElemUpdate(3)
+}
+WCGC_BlueCompElemLightningChanged(*)
+{
+    WCV.Color[3] := UpdateBlueComponentFromHexToHexInt(WCV.Color[3], MUpDown_WCColorBElemLightning.Value)
+    WCGC_ColorElemUpdate(3)
+}
+
+WCGC_RedCompElemGroundChanged(*)
+{
+    WCV.Color[4] := UpdateRedComponentFromHexToHexInt(WCV.Color[4], MUpDown_WCColorRElemGround.Value)
+    WCGC_ColorElemUpdate(4)
+}
+WCGC_GreenCompElemGroundChanged(*)
+{
+    WCV.Color[4] := UpdateGreenComponentFromHexToHexInt(WCV.Color[4], MUpDown_WCColorGElemGround.Value)
+    WCGC_ColorElemUpdate(4)
+}
+WCGC_BlueCompElemGroundChanged(*)
+{
+    WCV.Color[4] := UpdateBlueComponentFromHexToHexInt(WCV.Color[4], MUpDown_WCColorBElemGround.Value)
+    WCGC_ColorElemUpdate(4)
+}
+
+WCGC_RedCompElemDarkChanged(*)
+{
+    WCV.Color[5] := UpdateRedComponentFromHexToHexInt(WCV.Color[5], MUpDown_WCColorRElemDark.Value)
+    WCGC_ColorElemUpdate(5)
+}
+WCGC_GreenCompElemDarkChanged(*)
+{
+    WCV.Color[5] := UpdateGreenComponentFromHexToHexInt(WCV.Color[5], MUpDown_WCColorGElemDark.Value)
+    WCGC_ColorElemUpdate(5)
+}
+WCGC_BlueCompElemDarkChanged(*)
+{
+    WCV.Color[5] := UpdateBlueComponentFromHexToHexInt(WCV.Color[5], MUpDown_WCColorBElemDark.Value)
+    WCGC_ColorElemUpdate(5)
+}
+
+WCGC_RedCompElemLightChanged(*)
+{
+    WCV.Color[6] := UpdateRedComponentFromHexToHexInt(WCV.Color[6], MUpDown_WCColorRElemLight.Value)
+    WCGC_ColorElemUpdate(6)
+}
+WCGC_GreenCompElemLightChanged(*)
+{
+    WCV.Color[6] := UpdateGreenComponentFromHexToHexInt(WCV.Color[6], MUpDown_WCColorGElemLight.Value)
+    WCGC_ColorElemUpdate(6)
+}
+WCGC_BlueCompElemLightChanged(*)
+{
+    WCV.Color[6] := UpdateBlueComponentFromHexToHexInt(WCV.Color[6], MUpDown_WCColorBElemLight.Value)
+    WCGC_ColorElemUpdate(6)
 }
 
 
@@ -1790,6 +2478,15 @@ MinVariationColorFromHexToHexString(ColorHexAsInt, VariationInt)
     Green := Max( GreenComponentFromHexAsRGBInt(ColorHexAsInt) - VariationInt, 0 )
     Blue := Max( BlueComponentFromHexAsRGBInt(ColorHexAsInt) - VariationInt, 0 )
     Return "0x" . Format("{:X}", ((Red & 0xFF)<<16) | ((Green & 0xFF)<<8) | (Blue & 0xFF))
+}
+IntWrap(kX, LB, UB)
+{
+    Rang := UB - LB + 1
+    If (kX < LB)
+    {
+        kX := kX + Rang * ((LB - kX) / Rang + 1)
+    }
+    Return LB + Mod((kX - LB), Rang)
 }
 
 
