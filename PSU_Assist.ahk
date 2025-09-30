@@ -7,7 +7,7 @@ SendMode "Event"
 
 CoordMode "Pixel", "Screen"
 SetKeyDelay 50, 40  ; 75ms between keys, 25ms between down/up.
-
+SetWorkingDir A_ScriptDir  ; Ensures a consistent starting directory.
 
 ; full_command_line := DllCall("GetCommandLine", "str")
 
@@ -32,6 +32,8 @@ global JAG := {}
 global JAV := {}
 JAG.X := 0
 JAG.Y := 0
+JAG.XW := 0
+JAG.YW := 0
 JAG.W := 11
 JAG.H := 11
 JAV.Freq := 1
@@ -40,13 +42,15 @@ JAV.Delay := 70
 JAV.HotKey := "Right"
 JAV.PressKey := ConvertHotKeyToKeyPress(JAV.HotKey)
 JAG.SkipGuiResize := 0
-JAG.WindowCanMove := 0
+JAG.WindowCanMove := 1
 JAV.Count := 0
 
 global PCG := {}
 global PCV := {}
 PCG.X := 0
 PCG.Y := 0
+PCG.XW := 0
+PCG.YW := 0
 PCG.MX := 0
 PCG.MY := 0
 PCG.W := 120
@@ -66,6 +70,8 @@ global THG := {}
 global THV := {}
 THG.X := 0
 THG.Y := 0
+THG.XW := 0
+THG.YW := 0
 THG.MX := 0
 THG.MY := 0
 THG.W := 130
@@ -79,12 +85,14 @@ THV.BarPercent := -1
 THV.HotKey := "+F8"
 THV.PressKey := ConvertHotKeyToKeyPress(THV.HotKey)
 THG.SkipGuiResize := 0
-THG.WindowCanMove := 0
+THG.WindowCanMove := 1
 
 global ASG := {}
 global ASV := {}
 ASG.X := 0
 ASG.Y := 0
+ASG.XW := 0
+ASG.YW := 0
 ASG.MX := 0
 ASG.MY := 0
 ASG.W := 16
@@ -122,8 +130,8 @@ ASV.TypeText.InsertAt( ASV.ColorLookup["Fire"],      "/sl f" )
 ASV.TypeText.InsertAt( ASV.ColorLookup["Ice"],       "/sl i" )
 ASV.TypeText.InsertAt( ASV.ColorLookup["Lightning"], "/sl t" )
 ASV.TypeText.InsertAt( ASV.ColorLookup["Ground"],    "/sl e" )
-ASV.TypeText.InsertAt( ASV.ColorLookup["Dark"],      "/sl l" )
-ASV.TypeText.InsertAt( ASV.ColorLookup["Light"],     "/sl d" )
+ASV.TypeText.InsertAt( ASV.ColorLookup["Dark"],      "/sl d" )
+ASV.TypeText.InsertAt( ASV.ColorLookup["Light"],     "/sl l" )
 ASV.TitleText.InsertAt( ASV.ColorLookup["Fire"],      "AS FIRE" )
 ASV.TitleText.InsertAt( ASV.ColorLookup["Ice"],       "AS ICE" )
 ASV.TitleText.InsertAt( ASV.ColorLookup["Lightning"], "AS LIGHTNING" )
@@ -139,12 +147,14 @@ ASV.CurDetectColorIdx := 1
 ASV.DetectionState := 0 ; 0=new search, 1=recheck find
 ASV.NewDetectTries := 2
 ASG.SkipGuiResize := 0
-ASG.WindowCanMove := 0
+ASG.WindowCanMove := 1
 
 global WCG := {}
 global WCV := {}
 WCG.X := 0
 WCG.Y := 0
+WCG.XW := 0
+WCG.YW := 0
 WCG.MX := 0
 WCG.MY := 0
 WCG.W := 16
@@ -200,99 +210,23 @@ WCV.CurDetectColorIdx := 1
 WCV.DetectionState := 0 ; 0=new search, 1=recheck find
 WCV.NewDetectTries := 2
 WCG.SkipGuiResize := 0
-WCG.WindowCanMove := 0
+WCG.WindowCanMove := 1
 
 
-; TODO: enable and finish settings file loading
-; LoadSettings(FileName)
-; {
-;     global
-;     If (FileExist(FileName))
-;     {
-;         Loop read, FileName
-;         {
-;             LoadSettings_TermArray := StrSplit(A_LoopReadLine, "=")
-;             LoadSettings_SearchTerm := LoadSettings_TermArray[1]
-;             LoadSettings_TermValue := LoadSettings_TermArray[2]
-;             If (LoadSettings_SearchTerm = "JAG.X")
-;             {
-;                 JAG.X := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "JAG.Y")
-;             {
-;                 JAG.Y := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "JAG.W")
-;             {
-;                 JAG.W := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "JAG.H")
-;             {
-;                 JAG.H := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "JAV.Freq")
-;             {
-;                 JAV.Freq := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "JAV.Thresh")
-;             {
-;                 JAV.Thresh := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "JAV.Delay")
-;             {
-;                 JAV.Delay := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "JAV.HotKey")
-;             {
-;                 JAV.HotKey := LoadSettings_TermValue
-;                 JAV.PressKey := ConvertHotKeyToKeyPress(JAV.HotKey)
-;             }
+; ; TODO: enable and finish settings file loading
+LoadSettingsIni
 
-;             If (LoadSettings_SearchTerm = "PCG.X")
-;             {
-;                 PCG.X := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "PCG.Y")
-;             {
-;                 PCG.Y := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "PCG.W")
-;             {
-;                 PCG.W := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "PCG.H")
-;             {
-;                 PCG.H := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "PCV.Freq")
-;             {
-;                 PCV.Freq := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "PCV.PPThresh")
-;             {
-;                 PCV.PPThresh := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "PCV.TrigThresh")
-;             {
-;                 PCV.TrigThresh := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "PCV.Delay")
-;             {
-;                 PCV.Delay := LoadSettings_TermValue
-;             }
-;             If (LoadSettings_SearchTerm = "PCV.HotKey")
-;             {
-;                 PCV.HotKey := LoadSettings_TermValue
-;                 PCV.PressKey := ConvertHotKeyToKeyPress(PCV.HotKey)
-;             }
-;         }
-;     }
-; }
-; LoadSettings(Conf.SettingsFile)
+
 
 ; ; Create custom gui to control all script components
 Menu_Gui := Gui("+AlwaysOnTop +MinSize50x50 +MaxSize900x900 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu -DPIScale", "PSU AIO Assistant")
 Menu_Gui.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
+FileMenu := Menu()
+FileMenu.Add("&Save", SaveSettingsIni)
+MyMenuBar := MenuBar()
+MyMenuBar.Add("&File", FileMenu)
+Menu_Gui.MenuBar := MyMenuBar
+
 MButton_StartPSU := Menu_Gui.Add("Button", , "Start PSU")
 MButton_StartPSU.OnEvent("Click", StartPSU)
 MButton_RunPSUFR := Menu_Gui.Add("Button", "YS", "Run PSUFR")
@@ -862,7 +796,7 @@ MUpDown_WCColorBElemLight.OnEvent("Change", WCGC_BlueCompElemLightChanged)
 
 
 MTab_Settings.UseTab(0)
-Menu_Gui.Show("W150 H490")
+Menu_Gui.Show("W150 H530")
 
 
 
@@ -871,6 +805,7 @@ JAG.GUI := Gui("+AlwaysOnTop +MinSize5x5 +MaxSize25x25 +Resize +ToolWindow -Maxi
 JAG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
 JAG.GUI.OnEvent("Size", GUI_Resize )
 JAG.GUI.Show("W" . JAG.W . " H" . JAG.H)
+JAG.GUI.Move( JAG.XW, JAG.YW )
 WinSetTransColor(JAG.GUI.BackColor ,JAG.GUI.Hwnd)
 
 ; ; Create custom gui to represent where ahk is detecting pixels for auto Photon Charge 
@@ -878,6 +813,7 @@ PCG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -Max
 PCG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
 PCG.GUI.OnEvent("Size", GUI_Resize )
 PCG.GUI.Show("W" . PCG.W . " H" . PCG.H)
+PCG.GUI.Move( PCG.XW, PCG.YW )
 WinSetTransColor(PCG.GUI.BackColor , PCG.GUI.Hwnd)
 
 ; ; Create custom gui to represent where ahk is detecting pixels for auto Trimates (healing) 
@@ -885,6 +821,7 @@ THG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -Max
 THG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
 THG.GUI.OnEvent("Size", GUI_Resize )
 THG.GUI.Show("W" . THG.W . " H" . THG.H)
+THG.GUI.Move( THG.XW, THG.YW )
 WinSetTransColor(THG.GUI.BackColor , THG.GUI.Hwnd)
 
 ; ; Create custom gui for enemy element type detection to armor swap
@@ -892,6 +829,7 @@ ASG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -Max
 ASG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
 ASG.GUI.OnEvent("Size", GUI_Resize )
 ASG.GUI.Show("W" . ASG.W . " H" . ASG.H)
+ASG.GUI.Move( ASG.XW, ASG.YW )
 WinSetTransColor(ASG.GUI.BackColor , ASG.GUI.Hwnd)
 
 ; ; Create custom gui for enemy element type detection to armor swap
@@ -899,6 +837,7 @@ WCG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -Max
 WCG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
 WCG.GUI.OnEvent("Size", GUI_Resize )
 WCG.GUI.Show("W" . WCG.W . " H" . WCG.H)
+WCG.GUI.Move( WCG.XW, WCG.YW )
 WinSetTransColor(WCG.GUI.BackColor , WCG.GUI.Hwnd)
 
 ; function to update the position and size of custom guis when changed
@@ -1007,6 +946,8 @@ GuiRepositionedHook(wParam, lParam, msg, hwnd)
         GUI_Resize(WCG.GUI, 0, 0, 0)
     }
 }
+
+
 ; Init position and size values
 GUI_Resize(JAG.GUI, 0, 0, 0)
 GUI_Resize(PCG.GUI, 0, 0, 0)
@@ -1014,7 +955,11 @@ GUI_Resize(THG.GUI, 0, 0, 0)
 GUI_Resize(ASG.GUI, 0, 0, 0)
 GUI_Resize(WCG.GUI, 0, 0, 0)
 
-
+JAGC_EvalWindowHidden
+PCGC_EvalWindowHidden
+THGC_EvalWindowHidden
+WeaponChangeEvalWindowHidden
+ArmorSwapEvalWindowHidden
 
 ; Auto Just Attack
 SetTimer JAV_Loop, JAV.Freq
@@ -1412,13 +1357,24 @@ JAGC_AllowMoveWindow(*)
     if (JAG.WindowCanMove = 0)
     {
         JAG.WindowCanMove := 1
+    }
+    Else
+    {
+        JAG.WindowCanMove := 0
+    }
+    JAGC_EvalWindowHidden
+}
+JAGC_EvalWindowHidden()
+{
+    global
+    if (JAG.WindowCanMove = 0)
+    {
         JAG.SkipGuiResize := 1
         JAG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
         MButton_ShowJA.Text := "Show JA"
     }
     Else
     {
-        JAG.WindowCanMove := 0
         JAG.SkipGuiResize := 0
         JAG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowJA.Text := "Hide JA"
@@ -1431,13 +1387,24 @@ PCGC_AllowMoveWindow(*)
     if (PCG.WindowCanMove = 0)
     {
         PCG.WindowCanMove := 1
+    }
+    Else
+    {
+        PCG.WindowCanMove := 0
+    }
+    PCGC_EvalWindowHidden
+}
+PCGC_EvalWindowHidden()
+{
+    global
+    if (PCG.WindowCanMove = 0)
+    {
         PCG.SkipGuiResize := 1
         PCG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
         MButton_ShowPC.Text := "Show PC"
     }
     Else
     {
-        PCG.WindowCanMove := 0
         PCG.SkipGuiResize := 0
         PCG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowPC.Text := "Hide PC"
@@ -1450,13 +1417,24 @@ THGC_AllowMoveWindow(*)
     if (THG.WindowCanMove = 0)
     {
         THG.WindowCanMove := 1
+    }
+    Else
+    {
+        THG.WindowCanMove := 0
+    }
+    THGC_EvalWindowHidden
+}
+THGC_EvalWindowHidden()
+{
+    global
+    if (THG.WindowCanMove = 0)
+    {
         THG.SkipGuiResize := 1
         THG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
         MButton_ShowTH.Text := "Show TH"
     }
     Else
     {
-        THG.WindowCanMove := 0
         THG.SkipGuiResize := 0
         THG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowTH.Text := "Hide TH"
@@ -1469,13 +1447,24 @@ ArmorSwapAllowMoveWindow(*)
     if (ASG.WindowCanMove = 0)
     {
         ASG.WindowCanMove := 1
+    }
+    Else
+    {
+        ASG.WindowCanMove := 0
+    }
+    ArmorSwapEvalWindowHidden
+}
+ArmorSwapEvalWindowHidden()
+{
+    global
+    if (ASG.WindowCanMove = 0)
+    {
         ASG.SkipGuiResize := 1
         ASG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
         MButton_ShowAS.Text := "Show AS"
     }
     Else
     {
-        ASG.WindowCanMove := 0
         ASG.SkipGuiResize := 0
         ASG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowAS.Text := "Hide AS"
@@ -1488,13 +1477,24 @@ WeaponChangeAllowMoveWindow(*)
     if (WCG.WindowCanMove = 0)
     {
         WCG.WindowCanMove := 1
+    }
+    Else
+    {
+        WCG.WindowCanMove := 0
+    }
+    WeaponChangeEvalWindowHidden
+}
+WeaponChangeEvalWindowHidden()
+{
+    global
+    if (WCG.WindowCanMove = 0)
+    {
         WCG.SkipGuiResize := 1
         WCG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
         MButton_ShowWC.Text := "Show WC"
     }
     Else
     {
-        WCG.WindowCanMove := 0
         WCG.SkipGuiResize := 0
         WCG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
         MButton_ShowWC.Text := "Hide WC"
@@ -1506,6 +1506,7 @@ JAGC_PressKeyChanged(*)
     global
     If (StrLen(MHotkey_JAPressKey.Value) > 0)
     {
+        JAV.HotKey :=   MHotkey_JAPressKey.Value
         JAV.PressKey := ConvertHotKeyToKeyPress(MHotkey_JAPressKey.Value)
     }    
 }
@@ -1563,6 +1564,7 @@ PCGC_PressKeyChanged(*)
     global
     If (StrLen(MHotkey_PCPressKey.Value) > 0)
     {
+        PCV.HotKey :=   MHotkey_PCPressKey.Value
         PCV.PressKey := ConvertHotKeyToKeyPress(MHotkey_PCPressKey.Value)
     }
 }
@@ -1625,6 +1627,7 @@ THGC_PressKeyChanged(*)
     global
     If (StrLen(MHotkey_THPressKey.Value) > 0)
     {
+        THV.HotKey :=   MHotkey_THPressKey.Value
         THV.PressKey := ConvertHotKeyToKeyPress(MHotkey_THPressKey.Value)
     }    
 }
@@ -1752,6 +1755,7 @@ ASGC_ElemFirePressKeyChanged(*)
     global
     If (StrLen(MHotkey_ASPressKeyElemFire.Value) > 0)
     {
+        ASV.HotKey[1] :=   MHotkey_ASPressKeyElemFire.Value
         ASV.PressKey[1] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemFire.Value)
     }
 }
@@ -1760,6 +1764,7 @@ ASGC_ElemIcePressKeyChanged(*)
     global
     If (StrLen(MHotkey_ASPressKeyElemIce.Value) > 0)
     {
+        ASV.HotKey[2] :=   MHotkey_ASPressKeyElemIce.Value
         ASV.PressKey[2] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemIce.Value)
     }
 }
@@ -1768,6 +1773,7 @@ ASGC_ElemLightningPressKeyChanged(*)
     global
     If (StrLen(MHotkey_ASPressKeyElemLightning.Value) > 0)
     {
+        ASV.HotKey[3] :=   MHotkey_ASPressKeyElemLightning.Value
         ASV.PressKey[3] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLightning.Value)
     }
 }
@@ -1776,6 +1782,7 @@ ASGC_ElemGroundPressKeyChanged(*)
     global
     If (StrLen(MHotkey_ASPressKeyElemGround.Value) > 0)
     {
+        ASV.HotKey[4] :=   MHotkey_ASPressKeyElemGround.Value
         ASV.PressKey[4] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemGround.Value)
     }
 }
@@ -1784,6 +1791,7 @@ ASGC_ElemDarkPressKeyChanged(*)
     global
     If (StrLen(MHotkey_ASPressKeyElemDark.Value) > 0)
     {
+        ASV.HotKey[5] :=   MHotkey_ASPressKeyElemDark.Value
         ASV.PressKey[5] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemDark.Value)
     }
 }
@@ -1792,6 +1800,7 @@ ASGC_ElemLightPressKeyChanged(*)
     global
     If (StrLen(MHotkey_ASPressKeyElemLight.Value) > 0)
     {
+        ASV.HotKey[6] :=   MHotkey_ASPressKeyElemLight.Value
         ASV.PressKey[6] := ConvertHotKeyToKeyPress(MHotkey_ASPressKeyElemLight.Value)
     }
 }
@@ -2017,6 +2026,7 @@ WCGC_ElemFirePressKeyChanged(*)
     global
     If (StrLen(MHotkey_WCPressKeyElemFire.Value) > 0)
     {
+        WCV.HotKey[1] :=   MHotkey_WCPressKeyElemFire.Value
         WCV.PressKey[1] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemFire.Value)
     }
 }
@@ -2025,6 +2035,7 @@ WCGC_ElemIcePressKeyChanged(*)
     global
     If (StrLen(MHotkey_WCPressKeyElemIce.Value) > 0)
     {
+        WCV.HotKey[2] :=   MHotkey_WCPressKeyElemIce.Value
         WCV.PressKey[2] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemIce.Value)
     }
 }
@@ -2033,6 +2044,7 @@ WCGC_ElemLightningPressKeyChanged(*)
     global
     If (StrLen(MHotkey_WCPressKeyElemLightning.Value) > 0)
     {
+        WCV.HotKey[3] :=   MHotkey_WCPressKeyElemLightning.Value
         WCV.PressKey[3] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemLightning.Value)
     }
 }
@@ -2041,6 +2053,7 @@ WCGC_ElemGroundPressKeyChanged(*)
     global
     If (StrLen(MHotkey_WCPressKeyElemGround.Value) > 0)
     {
+        WCV.HotKey[4] :=   MHotkey_WCPressKeyElemGround.Value
         WCV.PressKey[4] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemGround.Value)
     }
 }
@@ -2049,6 +2062,7 @@ WCGC_ElemDarkPressKeyChanged(*)
     global
     If (StrLen(MHotkey_WCPressKeyElemDark.Value) > 0)
     {
+        WCV.HotKey[5] :=   MHotkey_WCPressKeyElemDark.Value
         WCV.PressKey[5] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemDark.Value)
     }
 }
@@ -2057,6 +2071,7 @@ WCGC_ElemLightPressKeyChanged(*)
     global
     If (StrLen(MHotkey_WCPressKeyElemLight.Value) > 0)
     {
+        WCV.HotKey[6] :=   MHotkey_WCPressKeyElemLight.Value
         WCV.PressKey[6] := ConvertHotKeyToKeyPress(MHotkey_WCPressKeyElemLight.Value)
     }
 }
@@ -2487,6 +2502,188 @@ IntWrap(kX, LB, UB)
         kX := kX + Rang * ((LB - kX) / Rang + 1)
     }
     Return LB + Mod((kX - LB), Rang)
+}
+LoadSettingsIni()
+{
+    global
+    local iniFilePath := A_ScriptDir "\"  Conf.SettingsFile
+
+    JAG.XW := IniRead( iniFilePath, "JA", "JAG.XW", JAG.XW )
+    JAG.YW := IniRead( iniFilePath, "JA", "JAG.YW", JAG.YW )
+    JAG.W := IniRead( iniFilePath, "JA", "JAG.W", JAG.W )
+    JAG.H := IniRead( iniFilePath, "JA", "JAG.H", JAG.H )
+    JAG.WindowCanMove := IniRead( iniFilePath, "JA", "JAG.WindowCanMove", JAG.WindowCanMove )
+    JAV.Freq := IniRead( iniFilePath, "JA", "JAV.Freq", JAV.Freq )
+    JAV.Thresh := IniRead( iniFilePath, "JA", "JAV.Thresh", JAV.Thresh )
+    JAV.Delay := IniRead( iniFilePath, "JA", "JAV.Delay", JAV.Delay )
+    JAV.Hotkey := IniRead( iniFilePath, "JA", "JAV.Hotkey", JAV.Hotkey )
+    JAV.PressKey := ConvertHotKeyToKeyPress(JAV.HotKey)
+
+    PCG.XW := IniRead( iniFilePath, "PC", "PCG.XW", PCG.XW )
+    PCG.YW := IniRead( iniFilePath, "PC", "PCG.YW", PCG.YW )
+    PCG.W := IniRead( iniFilePath, "PC", "PCG.W", PCG.W )
+    PCG.H := IniRead( iniFilePath, "PC", "PCG.H", PCG.H )
+    PCG.WindowCanMove := IniRead( iniFilePath, "PC", "PCG.WindowCanMove", PCG.WindowCanMove )
+    PCV.Freq := IniRead( iniFilePath, "PC", "PCV.Freq", PCV.Freq )
+    PCV.PPThresh := IniRead( iniFilePath, "PC", "PCV.PPThresh", PCV.PPThresh )
+    PCV.TrigThresh := IniRead( iniFilePath, "PC", "PCV.TrigThresh", PCV.TrigThresh )
+    PCV.Delay := IniRead( iniFilePath, "PC", "PCV.Delay", PCV.Delay )
+    PCV.Hotkey := IniRead( iniFilePath, "PC", "PCV.Hotkey", PCV.HotKey )
+    PCV.PressKey := ConvertHotKeyToKeyPress(PCV.HotKey)
+
+    THG.XW := IniRead( iniFilePath, "TH", "THG.XW", THG.XW )
+    THG.YW := IniRead( iniFilePath, "TH", "THG.YW", THG.YW )
+    THG.W := IniRead( iniFilePath, "TH", "THG.W", THG.W )
+    THG.H := IniRead( iniFilePath, "TH", "THG.H", THG.H )
+    THG.WindowCanMove := IniRead( iniFilePath, "TH", "THG.WindowCanMove", THG.WindowCanMove )
+    THV.Freq := IniRead( iniFilePath, "TH", "THV.Freq", THV.Freq )
+    THV.HPThresh := IniRead( iniFilePath, "TH", "THV.PPThresh", THV.HPThresh )
+    THV.TrigThresh := IniRead( iniFilePath, "TH", "THV.TrigThresh", THV.TrigThresh )
+    THV.Delay := IniRead( iniFilePath, "TH", "THV.Delay", THV.Delay )
+    THV.Hotkey := IniRead( iniFilePath, "TH", "THV.Hotkey", THV.HotKey )
+    THV.PressKey := ConvertHotKeyToKeyPress(THV.HotKey)
+
+    ASG.XW := IniRead( iniFilePath, "AS", "ASG.XW", ASG.XW )
+    ASG.YW := IniRead( iniFilePath, "AS", "ASG.YW", ASG.YW )
+    ASG.W := IniRead( iniFilePath, "AS", "ASG.W", ASG.W )
+    ASG.H := IniRead( iniFilePath, "AS", "ASG.H", ASG.H )
+    ASG.WindowCanMove := IniRead( iniFilePath, "AS", "ASG.WindowCanMove", ASG.WindowCanMove )
+    ASV.Color.InsertAt( ASV.ColorLookup["Fire"],        IniRead( iniFilePath, "AS", "ASV.Color." . "Fire",          0xFE7878 ) )
+    ASV.Color.InsertAt( ASV.ColorLookup["Ice"],         IniRead( iniFilePath, "AS", "ASV.Color." . "Ice",           0x7272FF ) )
+    ASV.Color.InsertAt( ASV.ColorLookup["Lightning"],   IniRead( iniFilePath, "AS", "ASV.Color." . "Lightning",     0xDADA2B ) )
+    ASV.Color.InsertAt( ASV.ColorLookup["Ground"],      IniRead( iniFilePath, "AS", "ASV.Color." . "Ground",        0xE47D00 ) )
+    ASV.Color.InsertAt( ASV.ColorLookup["Dark"],        IniRead( iniFilePath, "AS", "ASV.Color." . "Dark",          0x653865 ) )
+    ASV.Color.InsertAt( ASV.ColorLookup["Light"],       IniRead( iniFilePath, "AS", "ASV.Color." . "Light",         0xFFC7AD ) )
+    ASV.HotKey.InsertAt( ASV.ColorLookup["Fire"],       IniRead( iniFilePath, "AS", "ASV.HotKey." . "Fire",         "+F1" ) )
+    ASV.HotKey.InsertAt( ASV.ColorLookup["Ice"],        IniRead( iniFilePath, "AS", "ASV.HotKey." . "Ice",          "+F2" ) )
+    ASV.HotKey.InsertAt( ASV.ColorLookup["Lightning"],  IniRead( iniFilePath, "AS", "ASV.HotKey." . "Lightning",    "+F3" ) )
+    ASV.HotKey.InsertAt( ASV.ColorLookup["Ground"],     IniRead( iniFilePath, "AS", "ASV.HotKey." . "Ground",       "+F4" ) )
+    ASV.HotKey.InsertAt( ASV.ColorLookup["Dark"],       IniRead( iniFilePath, "AS", "ASV.HotKey." . "Dark",         "+F5" ) )
+    ASV.HotKey.InsertAt( ASV.ColorLookup["Light"],      IniRead( iniFilePath, "AS", "ASV.HotKey." . "Light",        "+F6" ) )
+    ASV.TypeText.InsertAt( ASV.ColorLookup["Fire"],     IniRead( iniFilePath, "AS", "ASV.TypeText." . "Fire",       "/sl f" ) )
+    ASV.TypeText.InsertAt( ASV.ColorLookup["Ice"],      IniRead( iniFilePath, "AS", "ASV.TypeText." . "Ice",        "/sl i" ) )
+    ASV.TypeText.InsertAt( ASV.ColorLookup["Lightning"],IniRead( iniFilePath, "AS", "ASV.TypeText." . "Lightning",  "/sl t" ) )
+    ASV.TypeText.InsertAt( ASV.ColorLookup["Ground"],   IniRead( iniFilePath, "AS", "ASV.TypeText." . "Ground",     "/sl e" ) )
+    ASV.TypeText.InsertAt( ASV.ColorLookup["Dark"],     IniRead( iniFilePath, "AS", "ASV.TypeText." . "Dark",       "/sl d" ) )
+    ASV.TypeText.InsertAt( ASV.ColorLookup["Light"],    IniRead( iniFilePath, "AS", "ASV.TypeText." . "Light",      "/sl l" ) )
+    
+    WCG.XW := IniRead( iniFilePath, "WC", "WCG.XW", WCG.XW )
+    WCG.YW := IniRead( iniFilePath, "WC", "WCG.YW", WCG.YW )
+    WCG.W := IniRead( iniFilePath, "WC", "WCG.W", WCG.W )
+    WCG.H := IniRead( iniFilePath, "WC", "WCG.H", WCG.H )
+    WCG.WindowCanMove := IniRead( iniFilePath, "WC", "WCG.WindowCanMove", WCG.WindowCanMove )
+    WCV.Color.InsertAt( WCV.ColorLookup["Fire"],        IniRead( iniFilePath, "WC", "WCV.Color." . "Fire",          0xFE7878 ) )
+    WCV.Color.InsertAt( WCV.ColorLookup["Ice"],         IniRead( iniFilePath, "WC", "WCV.Color." . "Ice",           0x7D7DFF ) )
+    WCV.Color.InsertAt( WCV.ColorLookup["Lightning"],   IniRead( iniFilePath, "WC", "WCV.Color." . "Lightning",     0xFFFF32 ) )
+    WCV.Color.InsertAt( WCV.ColorLookup["Ground"],      IniRead( iniFilePath, "WC", "WCV.Color." . "Ground",        0xFF8C00 ) )
+    WCV.Color.InsertAt( WCV.ColorLookup["Dark"],        IniRead( iniFilePath, "WC", "WCV.Color." . "Dark",          0xFF8CFF ) )
+    WCV.Color.InsertAt( WCV.ColorLookup["Light"],       IniRead( iniFilePath, "WC", "WCV.Color." . "Light",         0xFFCDB4 ) )
+    WCV.HotKey.InsertAt( WCV.ColorLookup["Fire"],       IniRead( iniFilePath, "WC", "WCV.HotKey." . "Fire",         "+F7" ) )
+    WCV.HotKey.InsertAt( WCV.ColorLookup["Ice"],        IniRead( iniFilePath, "WC", "WCV.HotKey." . "Ice",          "+F8" ) )
+    WCV.HotKey.InsertAt( WCV.ColorLookup["Lightning"],  IniRead( iniFilePath, "WC", "WCV.HotKey." . "Lightning",    "+F9" ) )
+    WCV.HotKey.InsertAt( WCV.ColorLookup["Ground"],     IniRead( iniFilePath, "WC", "WCV.HotKey." . "Ground",       "+F10" ) )
+    WCV.HotKey.InsertAt( WCV.ColorLookup["Dark"],       IniRead( iniFilePath, "WC", "WCV.HotKey." . "Dark",         "+F11" ) )
+    WCV.HotKey.InsertAt( WCV.ColorLookup["Light"],      IniRead( iniFilePath, "WC", "WCV.HotKey." . "Light",        "+F12" ) )
+    WCV.TypeText.InsertAt( WCV.ColorLookup["Fire"],     IniRead( iniFilePath, "WC", "WCV.TypeText." . "Fire",       "/wp 1" ) )
+    WCV.TypeText.InsertAt( WCV.ColorLookup["Ice"],      IniRead( iniFilePath, "WC", "WCV.TypeText." . "Ice",        "/wp 2" ) )
+    WCV.TypeText.InsertAt( WCV.ColorLookup["Lightning"],IniRead( iniFilePath, "WC", "WCV.TypeText." . "Lightning",  "/wp 3" ) )
+    WCV.TypeText.InsertAt( WCV.ColorLookup["Ground"],   IniRead( iniFilePath, "WC", "WCV.TypeText." . "Ground",     "/wp 4" ) )
+    WCV.TypeText.InsertAt( WCV.ColorLookup["Dark"],     IniRead( iniFilePath, "WC", "WCV.TypeText." . "Dark",       "/wp 5" ) )
+    WCV.TypeText.InsertAt( WCV.ColorLookup["Light"],    IniRead( iniFilePath, "WC", "WCV.TypeText." . "Light",      "/wp 6" ) )
+
+}
+SaveSettingsIni(*)
+{
+    global
+    local iniFilePath := A_ScriptDir "\"  Conf.SettingsFile
+    local X, Y
+
+    JAG.GUI.GetPos( &X, &Y )
+    IniWrite  X, iniFilePath, "JA", "JAG.XW"
+    IniWrite  Y, iniFilePath, "JA", "JAG.YW"
+    IniWrite  JAG.W, iniFilePath, "JA", "JAG.W"
+    IniWrite  JAG.H, iniFilePath, "JA", "JAG.H"
+    IniWrite  JAG.WindowCanMove, iniFilePath, "JA", "JAG.WindowCanMove"
+    IniWrite  JAV.Freq, iniFilePath, "JA", "JAV.Freq"
+    IniWrite  JAV.Thresh, iniFilePath, "JA", "JAV.Thresh"
+    IniWrite  JAV.Delay, iniFilePath, "JA", "JAV.Delay"
+    IniWrite  JAV.HotKey, iniFilePath, "JA", "JAV.HotKey"
+
+    PCG.GUI.GetPos( &X, &Y )
+    IniWrite  X, iniFilePath, "PC", "PCG.XW"
+    IniWrite  Y, iniFilePath, "PC", "PCG.YW"
+    IniWrite  PCG.W, iniFilePath, "PC", "PCG.W"
+    IniWrite  PCG.H, iniFilePath, "PC", "PCG.H"
+    IniWrite  PCG.WindowCanMove, iniFilePath, "PC", "PCG.WindowCanMove"
+    IniWrite  PCV.Freq, iniFilePath, "PC", "PCV.Freq"
+    IniWrite  PCV.PPThresh, iniFilePath, "PC", "PCV.PPThresh"
+    IniWrite  PCV.TrigThresh, iniFilePath, "PC", "PCV.TrigThresh"
+    IniWrite  PCV.Delay, iniFilePath, "PC", "PCV.Delay"
+    IniWrite  PCV.HotKey, iniFilePath, "PC", "PCV.HotKey"
+    
+    THG.GUI.GetPos( &X, &Y )
+    IniWrite  X, iniFilePath, "TH", "THG.XW"
+    IniWrite  Y, iniFilePath, "TH", "THG.YW"
+    IniWrite  THG.W, iniFilePath, "TH", "THG.W"
+    IniWrite  THG.H, iniFilePath, "TH", "THG.H"
+    IniWrite  THG.WindowCanMove, iniFilePath, "TH", "THG.WindowCanMove"
+    IniWrite  THV.Freq, iniFilePath, "TH", "THV.Freq"
+    IniWrite  THV.HPThresh, iniFilePath, "TH", "THV.HPThresh"
+    IniWrite  THV.TrigThresh, iniFilePath, "TH", "THV.TrigThresh"
+    IniWrite  THV.Delay, iniFilePath, "TH", "THV.Delay"
+    IniWrite  THV.HotKey, iniFilePath, "TH", "THV.HotKey"
+    
+    ASG.GUI.GetPos( &X, &Y )
+    IniWrite  X, iniFilePath, "AS", "ASG.XW"
+    IniWrite  Y, iniFilePath, "AS", "ASG.YW"
+    IniWrite  ASG.W, iniFilePath, "AS", "ASG.W"
+    IniWrite  ASG.H, iniFilePath, "AS", "ASG.H"
+    IniWrite  ASG.WindowCanMove, iniFilePath, "AS", "ASG.WindowCanMove"
+    IniWrite  ASV.Color[1], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[1]
+    IniWrite  ASV.Color[2], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[2]
+    IniWrite  ASV.Color[3], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[3]
+    IniWrite  ASV.Color[4], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[4]
+    IniWrite  ASV.Color[5], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[5]
+    IniWrite  ASV.Color[6], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[6]
+    IniWrite  ASV.HotKey[1], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[1]
+    IniWrite  ASV.HotKey[2], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[2]
+    IniWrite  ASV.HotKey[3], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[3]
+    IniWrite  ASV.HotKey[4], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[4]
+    IniWrite  ASV.HotKey[5], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[5]
+    IniWrite  ASV.HotKey[6], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[6]
+    IniWrite  ASV.TypeText[1], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[1]
+    IniWrite  ASV.TypeText[2], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[2]
+    IniWrite  ASV.TypeText[3], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[3]
+    IniWrite  ASV.TypeText[4], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[4]
+    IniWrite  ASV.TypeText[5], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[5]
+    IniWrite  ASV.TypeText[6], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[6]
+    IniWrite  ASV.InputMode, iniFilePath, "AS", "ASV.InputMode"
+    
+    WCG.GUI.GetPos( &X, &Y )
+    IniWrite  X, iniFilePath, "WC", "WCG.XW"
+    IniWrite  Y, iniFilePath, "WC", "WCG.YW"
+    IniWrite  WCG.W, iniFilePath, "WC", "WCG.W"
+    IniWrite  WCG.H, iniFilePath, "WC", "WCG.H"
+    IniWrite  WCG.WindowCanMove, iniFilePath, "WC", "WCG.WindowCanMove"
+    IniWrite  WCV.Color[1], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[1]
+    IniWrite  WCV.Color[2], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[2]
+    IniWrite  WCV.Color[3], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[3]
+    IniWrite  WCV.Color[4], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[4]
+    IniWrite  WCV.Color[5], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[5]
+    IniWrite  WCV.Color[6], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[6]
+    IniWrite  WCV.HotKey[1], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[1]
+    IniWrite  WCV.HotKey[2], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[2]
+    IniWrite  WCV.HotKey[3], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[3]
+    IniWrite  WCV.HotKey[4], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[4]
+    IniWrite  WCV.HotKey[5], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[5]
+    IniWrite  WCV.HotKey[6], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[6]
+    IniWrite  WCV.TypeText[1], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[1]
+    IniWrite  WCV.TypeText[2], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[2]
+    IniWrite  WCV.TypeText[3], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[3]
+    IniWrite  WCV.TypeText[4], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[4]
+    IniWrite  WCV.TypeText[5], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[5]
+    IniWrite  WCV.TypeText[6], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[6]
+    IniWrite  WCV.InputMode, iniFilePath, "WC", "WCV.InputMode"
 }
 
 
