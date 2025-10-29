@@ -2726,6 +2726,10 @@ LoadSettingsIni()
     ASV.TypeText.InsertAt( ASV.ColorLookup["Ground"],   IniRead( iniFilePath, "AS", "ASV.TypeText." . "Ground",     "/sl e" ) )
     ASV.TypeText.InsertAt( ASV.ColorLookup["Dark"],     IniRead( iniFilePath, "AS", "ASV.TypeText." . "Dark",       "/sl d" ) )
     ASV.TypeText.InsertAt( ASV.ColorLookup["Light"],    IniRead( iniFilePath, "AS", "ASV.TypeText." . "Light",      "/sl l" ) )
+    Loop 6
+    {
+        ASV.PressKey.InsertAt( A_Index, ConvertHotKeyToKeyPress(ASV.HotKey[A_Index]) )
+    }
     
     WCG.XW                  := IniRead( iniFilePath, "WC", "WCG.XW", WCG.XW )
     WCG.YW                  := IniRead( iniFilePath, "WC", "WCG.YW", WCG.YW )
@@ -2752,6 +2756,10 @@ LoadSettingsIni()
     WCV.TypeText.InsertAt( WCV.ColorLookup["Ground"],   IniRead( iniFilePath, "WC", "WCV.TypeText." . "Ground",     "/wp 4" ) )
     WCV.TypeText.InsertAt( WCV.ColorLookup["Dark"],     IniRead( iniFilePath, "WC", "WCV.TypeText." . "Dark",       "/wp 5" ) )
     WCV.TypeText.InsertAt( WCV.ColorLookup["Light"],    IniRead( iniFilePath, "WC", "WCV.TypeText." . "Light",      "/wp 6" ) )
+    Loop 6
+    {
+        WCV.PressKey.InsertAt( A_Index, ConvertHotKeyToKeyPress(WCV.HotKey[A_Index]) )
+    }
 
 }
 SaveSettingsIni(*)
