@@ -6,7 +6,7 @@
 SendMode "Event"
 
 CoordMode "Pixel", "Screen"
-SetKeyDelay 50, 40  ; 75ms between keys, 25ms between down/up.
+SetKeyDelay 35, 25  ; 75ms between keys, 25ms between down/up.
 SetWorkingDir A_ScriptDir  ; Ensures a consistent starting directory.
 
 ; full_command_line := DllCall("GetCommandLine", "str")
@@ -26,6 +26,7 @@ SetWorkingDir A_ScriptDir  ; Ensures a consistent starting directory.
 ;VARS
 global Conf := {}
 Conf.SettingsFile := "psuassist.conf"
+PSUWinTitle := "ahk_exe PSUC.exe"
 UseInputLockout := false
 
 global JAG := {}
@@ -36,9 +37,10 @@ JAG.XW := 0
 JAG.YW := 0
 JAG.W := 11
 JAG.H := 11
+JAV.Enabled := true
 JAV.Freq := 1
 JAV.Thresh := 3
-JAV.Delay := 70
+JAV.Delay := 120
 JAV.HotKey := "Right"
 JAV.PressKey := ConvertHotKeyToKeyPress(JAV.HotKey)
 JAG.SkipGuiResize := 0
@@ -55,6 +57,7 @@ PCG.MX := 0
 PCG.MY := 0
 PCG.W := 120
 PCG.H := 1
+PCV.Enabled := true
 PCV.Freq := 200
 PCV.PPThresh := 7
 PCV.TrigThresh := 2
@@ -76,6 +79,7 @@ THG.MX := 0
 THG.MY := 0
 THG.W := 130
 THG.H := 1
+THV.Enabled := true
 THV.Count := 0
 THV.Freq := 150
 THV.HPThresh := 60
@@ -97,6 +101,7 @@ ASG.MX := 0
 ASG.MY := 0
 ASG.W := 16
 ASG.H := 1
+ASV.Enabled := true
 ASV.Count := 0
 ASV.Freq := 225
 ASV.DetectionVariation := 12 ; can be 0-255
@@ -159,6 +164,7 @@ WCG.MX := 0
 WCG.MY := 0
 WCG.W := 16
 WCG.H := 1
+WCV.Enabled := true
 WCV.Count := 0
 WCV.Freq := 225
 WCV.DetectionVariation := 5 ; can be 0-255
@@ -234,21 +240,50 @@ MButton_RunPSUFR.OnEvent("Click", RunPSUFR)
 
 ; MButton_PCUse := Menu_Gui.Add("Button", "XS vPhotonChargeUse", "Use Photon Charge")
 ; MButton_PCUse.OnEvent("Click", PhotonChargeUse)
-MProgress_JA := Menu_Gui.Add("Progress", "XS w100 h10 c0x3A89DB Smooth vJustAttackProgress", -1)
-MProgress_PC := Menu_Gui.Add("Progress", "w100 h16 c0x3A89DB Smooth vPhotonChargeProgress", -1)
-MProgress_TH := Menu_Gui.Add("Progress", "w100 h16 c0x5BD847 Smooth vTrimateHealProgress", -1)
-MProgress_AS := Menu_Gui.Add("Progress", "YS89 XS0 w100 h16 c0x666666 Smooth vArmorSwapProgress", -1)
+MProgress_JA  := Menu_Gui.Add("Progress", "YS29 XS0 w100 h10 c0x3A89DB Smooth vJustAttackProgress", -1)
+MProgress_JAC := Menu_Gui.Add("Progress", "YS29 XS103 w20 h10 c0x666666 Smooth vJustAttackCurrent", -1)
+MCheckBox_JAE := Menu_Gui.Add("CheckBox", "YS29 XS126 w20 h10 c0x666666 vJustAttackEnable", -1)
+MCheckBox_JAE.OnEvent("Click", JAE_ToggleFeatureEnabled)
+MCheckBox_JAE.Value := JAV.Enabled = true ? 1 : 0
+
+MProgress_PC  := Menu_Gui.Add("Progress", "YS47 XS0 w100 h16 c0x3A89DB Smooth vPhotonChargeProgress", -1)
+MProgress_PCC := Menu_Gui.Add("Progress", "YS47 XS103 w20 h16 c0x666666 Smooth vPhotonChargeCurrent", -1)
+MCheckBox_PCE := Menu_Gui.Add("CheckBox", "YS47 XS126 w20 h10 c0x666666 vPhotonChargeEnable", -1)
+MCheckBox_PCE.OnEvent("Click", PCE_ToggleFeatureEnabled)
+MCheckBox_PCE.Value := PCV.Enabled = true ? 1 : 0
+
+MProgress_TH  := Menu_Gui.Add("Progress", "YS68 XS0 w100 h16 c0x5BD847 Smooth vTrimateHealProgress", -1)
+MProgress_THC := Menu_Gui.Add("Progress", "YS68 XS103 w20 h16 c0x666666 Smooth vTrimateHealCurrent", -1)
+MCheckBox_THE := Menu_Gui.Add("CheckBox", "YS68 XS126 w20 h10 c0x666666 vTrimateHealEnable", -1)
+MCheckBox_THE.OnEvent("Click", THE_ToggleFeatureEnabled)
+MCheckBox_THE.Value := THV.Enabled = true ? 1 : 0
+
+MProgress_AS  := Menu_Gui.Add("Progress", "YS89 XS0 w100 h16 c0x666666 Smooth vArmorSwapProgress", -1)
 MProgress_ASC := Menu_Gui.Add("Progress", "YS89 XS103 w20 h16 c0x666666 Smooth vArmorSwapCurrent", -1)
-MProgress_WC := Menu_Gui.Add("Progress", "YS110 XS0 w100 h16 c0x666666 Smooth vWeaponChangeProgress", -1)
+MCheckBox_ASE := Menu_Gui.Add("CheckBox", "YS89 XS126 w20 h10 c0x666666 vArmorSwapEnable", -1)
+MCheckBox_ASE.OnEvent("Click", ASE_ToggleFeatureEnabled)
+MCheckBox_ASE.Value := ASV.Enabled = true ? 1 : 0
+
+MProgress_WC  := Menu_Gui.Add("Progress", "YS110 XS0 w100 h16 c0x666666 Smooth vWeaponChangeProgress", -1)
 MProgress_WCC := Menu_Gui.Add("Progress", "YS110 XS103 w20 h16 c0x666666 Smooth vWeaponChangeCurrent", -1)
+MCheckBox_WCE := Menu_Gui.Add("CheckBox", "YS110 XS126 w20 h10 c0x666666 vWeaponChangeEnable", -1)
+MCheckBox_WCE.OnEvent("Click", WCE_ToggleFeatureEnabled)
+MCheckBox_WCE.Value := WCV.Enabled = true ? 1 : 0
+
+MProgress_JAC.Value := 100
+MProgress_PCC.Value := 100
+MProgress_THC.Value := 100
 MProgress_ASC.Value := 100
 MProgress_WCC.Value := 100
 
+MStatusBar_MainStatus := Menu_Gui.Add("StatusBar", "vMainStatusBar", "")
 
 MTab_Settings := Menu_Gui.Add("Tab3","-Wrap XS w130", ["JA","PC","TH","AS","AS Keys","AS Clrs","WC","WC Keys","WC Clrs"])
 
 MTab_Settings.UseTab(1)
 MButton_ShowJA := Menu_Gui.Add("Button", "", "Hide JA")
+MButton_ShowJA.OnEvent("Click", JAGC_AllowMoveWindow)
+MButton_ShowJA := Menu_Gui.Add("Button", "", "Sim JA")
 MButton_ShowJA.OnEvent("Click", JAGC_AllowMoveWindow)
 
 Menu_Gui.Add("Text", , "JA Key")
@@ -461,7 +496,7 @@ MinColorPos := MidColorPos - MinColorWidth + 1
 MaxColorWidth := 10
 MaxColorPos := MidColorPos + MidColorWidth - 1
 ASG.ClrChgElementMax := [1,2,3,4,5,6]
-ASG.ClrChgElementCur    := [1,2,3,4,5,6]
+ASG.ClrChgElementCur := [1,2,3,4,5,6]
 ASG.ClrChgElementMin := [1,2,3,4,5,6]
 Menu_Gui.Add("Text", "Section", "FIRE")
 ASG.ClrChgElementMax[1] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vASCurrentColorFireElementMax c" . MaxVariationColorFromHexToHexString(ASV.Color[1],ASV.DetectionVariation), -1)
@@ -687,7 +722,7 @@ MinColorPos := MidColorPos - MinColorWidth + 1
 MaxColorWidth := 10
 MaxColorPos := MidColorPos + MidColorWidth - 1
 WCG.ClrChgElementMax := [1,2,3,4,5,6]
-WCG.ClrChgElementCur    := [1,2,3,4,5,6]
+WCG.ClrChgElementCur := [1,2,3,4,5,6]
 WCG.ClrChgElementMin := [1,2,3,4,5,6]
 Menu_Gui.Add("Text", "Section", "FIRE")
 WCG.ClrChgElementMax[1] := Menu_Gui.Add("Progress", "YS XS" . MinColorPos . " w" . MinColorWidth . " h14 Smooth vWCCurrentColorFireElementMax c" . MaxVariationColorFromHexToHexString(WCV.Color[1],WCV.DetectionVariation), -1)
@@ -796,7 +831,7 @@ MUpDown_WCColorBElemLight.OnEvent("Change", WCGC_BlueCompElemLightChanged)
 
 
 MTab_Settings.UseTab(0)
-Menu_Gui.Show("W150 H530")
+Menu_Gui.Show("W155 H560")
 
 
 
@@ -915,8 +950,7 @@ GUI_Resize(GuiObj, MinMax, Width, Height)
 
     If (GUI_Resized = true)
     {
-        ToolTip "X" X " Y" Y " W" W " H" H
-        SetTimer () => ToolTip(), -1000, 10000
+        MStatusBar_MainStatus.SetText( "X" . X . " Y" . Y . " W" . W . " H" . H ,, 0 )
     }
     return True
 }
@@ -962,7 +996,11 @@ WeaponChangeEvalWindowHidden
 ArmorSwapEvalWindowHidden
 
 ; Auto Just Attack
-SetTimer JAV_Loop, JAV.Freq
+
+if (JAV.Enabled = true)
+{
+    SetTimer JAV_Loop, JAV.Freq
+}
 JAV_Loop()
 {
     global
@@ -974,8 +1012,7 @@ JAV_Loop()
     } Else {
         If (JAV.Count > 0)
         {
-            ToolTip "Time Green" JAV.Count
-            SetTimer () => ToolTip(), -1000, 10000
+            MStatusBar_MainStatus.SetText( "Time Green" . JAV.Count ,, 0 )
         }
         JAV.Count := 0
         If ( P_Color = 0xFF0000 )
@@ -995,9 +1032,11 @@ JAV_Loop()
         {
             UseInputLockout := true
             Sleep JAV.Delay
-            ToolTip "Just Attack!"
-            SetTimer () => ToolTip(), -200, 10000
-            Send JAV.PressKey
+            MStatusBar_MainStatus.SetText( "Just Attack!" ,, 0 )
+            if (WinActive(PSUWinTitle)) 
+            {
+                Send "{Right}{Right}{Right}"
+            }
             JAV.Count := 0
             UseInputLockout := false
         }
@@ -1007,7 +1046,10 @@ JAV_Loop()
 
 
 ; Auto Photon Charge
-SetTimer PCV_Loop, PCV.Freq
+if (PCV.Enabled = true)
+{
+    SetTimer PCV_Loop, PCV.Freq
+}
 PCV_Loop()
 {
     global
@@ -1023,13 +1065,12 @@ PCV_Loop()
     } Else {
         If (PCV.Count > 0)
         {
-            ToolTip "Time Blue" PCV.Count
-            SetTimer () => ToolTip(), -1000, 10000
+            MStatusBar_MainStatus.SetText( "Time Blue" . PCV.Count ,, 0)
         }
         PCV.Count := 0
         PCG.GUI.Title := "PC"
     }
-;ToolTip "Pixel Search" PCV.Count " " PCG.X ":" PCG.Y " " PCG.W ":" PCG.H " FOUND:" PC_Px ":" PC_Py " " PCV.BarPercent
+;MStatusBar_MainStatus.SetText( "Pixel Search" PCV.Count " " PCG.X ":" PCG.Y " " PCG.W ":" PCG.H " FOUND:" PC_Px ":" PC_Py " " PCV.BarPercent ,, 0)
     If (PCV.Count >= PCV.TrigThresh)
     {
         PhotonChargeUse()
@@ -1039,7 +1080,10 @@ PCV_Loop()
 
 
 ; Auto Trimate Heal
-SetTimer THV_Loop, THV.Freq
+if (THV.Enabled = true)
+{
+    SetTimer THV_Loop, THV.Freq
+}
 THV_Loop()
 {
     global
@@ -1066,15 +1110,14 @@ THV_Loop()
         } Else {
             If (THV.Count > 0)
             {
-                ToolTip "Time Yellow" THV.Count
-                SetTimer () => ToolTip(), -1000, 10000
+                MStatusBar_MainStatus.SetText( "Time Yellow" . THV.Count ,, 0)
             }
             MProgress_TH.Value := -1
             THV.Count := 0
             THG.GUI.Title := "TH"
         }
     }
-;ToolTip "Pixel Search" THV.Count " " THG.X ":" THG.Y " " THG.W ":" THG.H " FOUND:" TH_Px ":" TH_Py " " THV.BarPercent
+;MStatusBar_MainStatus.SetText( "Pixel Search" THV.Count " " THG.X ":" THG.Y " " THG.W ":" THG.H " FOUND:" TH_Px ":" TH_Py " " THV.BarPercent ,, 0)
     If (THV.Count >= THV.TrigThresh)
     {
         TrimateHealUse()
@@ -1084,7 +1127,10 @@ THV_Loop()
 
 
 ; Auto Armor Swap
-SetTimer ASV_Loop, ASV.Freq
+if (ASV.Enabled = true)
+{
+    SetTimer ASV_Loop, ASV.Freq
+}
 ASV_Loop()
 {
     global
@@ -1110,8 +1156,7 @@ ASV_Loop()
     {
         If (ASV.Count > 0)
         {
-            ToolTip "Time ArmorSwap" ASV.Count
-            SetTimer () => ToolTip(), -1000, 10000
+            MStatusBar_MainStatus.SetText( "Time ArmorSwap" . ASV.Count ,, 0)
         }
         ASV.Count := 0
         MProgress_AS.Value := -1
@@ -1119,7 +1164,7 @@ ASV_Loop()
         ASV.ElemType := 0
         ASV.DetectionState := 0
     }
-; ToolTip "Pixel Search" ASV.Count " " ASG.X ":" ASG.Y " " ASG.W ":" ASG.H " FOUND:" AS_Px ":" AS_Py " " ASV.ElemType
+; MStatusBar_MainStatus.SetText( "Pixel Search" ASV.Count " " ASG.X ":" ASG.Y " " ASG.W ":" ASG.H " FOUND:" AS_Px ":" AS_Py " " ASV.ElemType ,, 0)
     If (ASV.Count >= ASV.TrigThresh)
     {
         ArmorSwapUse()
@@ -1151,7 +1196,10 @@ ASV_ColorEval( ColorIdx )
 }
 
 ; Auto Weapon Change
-SetTimer WCV_Loop, WCV.Freq
+if (WCV.Enabled = true)
+{
+    SetTimer WCV_Loop, WCV.Freq
+}
 WCV_Loop()
 {
     global
@@ -1177,8 +1225,7 @@ WCV_Loop()
     {
         If (WCV.Count > 0)
         {
-            ToolTip "Time WeaponChange" WCV.Count
-            SetTimer () => ToolTip(), -1000, 10000
+            MStatusBar_MainStatus.SetText( "Time WeaponChange" . WCV.Count ,, 0)
         }
         WCV.Count := 0
         MProgress_WC.Value := -1
@@ -1186,7 +1233,7 @@ WCV_Loop()
         WCV.ElemType := 0
         WCV.DetectionState := 0
     }
-; ToolTip "Pixel Search" WCV.Count " " WCG.X ":" WCG.Y " " WCG.W ":" WCG.H " FOUND:" WC_Px ":" WC_Py " " WCV.ElemType
+; MStatusBar_MainStatus.SetText( "Pixel Search" WCV.Count " " WCG.X ":" WCG.Y " " WCG.W ":" WCG.H " FOUND:" WC_Px ":" WC_Py " " WCV.ElemType ,, 0)
     If (WCV.Count >= WCV.TrigThresh)
     {
         WeaponChangeUse()
@@ -1225,9 +1272,11 @@ PhotonChargeUse(*)
     {
         UseInputLockout := true
         Sleep PCV.Delay
-        ToolTip "Photon Charge!"
-        SetTimer () => ToolTip(), -1900, 10000
-        Send PCV.PressKey
+        MStatusBar_MainStatus.SetText( "Photon Charge!" ,, 0)
+        if (WinActive(PSUWinTitle)) 
+        {
+            Send PCV.PressKey
+        }
         PCV.Count := 0
         UseInputLockout := false
     }
@@ -1239,9 +1288,11 @@ TrimateHealUse(*)
     {
         UseInputLockout := true
         Sleep THV.Delay
-        ToolTip "Trimate Heal!"
-        SetTimer () => ToolTip(), -1900, 10000
-        Send THV.PressKey
+        MStatusBar_MainStatus.SetText( "Trimate Heal!" ,, 0)
+        if (WinActive(PSUWinTitle)) 
+        {
+            Send THV.PressKey
+        }
         THV.Count := 0
         UseInputLockout := false
     }
@@ -1252,24 +1303,29 @@ ArmorSwapUse(*)
     if (ASV.LastElemType != ASV.ElemType && ASV.CanChange = 1 && UseInputLockout != true)
     {
         Sleep ASV.Delay
-        ToolTip "Armor Swap!"
-        SetTimer () => ToolTip(), -1900, 10000
+        MStatusBar_MainStatus.SetText( "Armor Swap!" ,, 0)
         
         UseInputLockout := true
         local ArmorSwapPressInputted := false
         If (ASV.InputMode = 1)
         {
             ArmorSwapPressInput := ASV.PressKey[ASV.ElemType]
-            Send ArmorSwapPressInput
+            if (WinActive(PSUWinTitle)) 
+            {
+                Send ArmorSwapPressInput
+            }
             MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[ASV.ElemType]))
             ArmorSwapPressInputted := true
         }
         Else If (ASV.InputMode = 2)
         {
             ArmorSwapPressInput := ASV.TypeText[ASV.ElemType]
-            Send "{Space}"
-            Send "{Text}" . ArmorSwapPressInput
-            Send "{Enter}{Enter}{Enter}"
+            if (WinActive(PSUWinTitle)) 
+            {
+                Send "{Space}"
+                Send "{Text}" . ArmorSwapPressInput
+                Send "{Enter}{Enter}{Enter}"
+            }
             MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[ASV.ElemType]))
             ArmorSwapPressInputted := true
         }
@@ -1291,24 +1347,29 @@ WeaponChangeUse(*)
     if (ASV_ElemType != 0 && WCV.ElemType != WCV.ColorOppositeLookup[ASV_ElemType] && WCV.CanChange = 1 && UseInputLockout != true)
     {
         Sleep WCV.Delay
-        ToolTip "Weapon Change!"
-        SetTimer () => ToolTip(), -1900, 10000
+        MStatusBar_MainStatus.SetText( "Weapon Change!" ,, 0)
         
         UseInputLockout := true
         local WeaponChangePressInputted := false
         If (WCV.InputMode = 1)
         {
             WeaponChangePressInput := WCV.PressKey[WCV.ColorOppositeLookup[ASV_ElemType]]
-            Send WeaponChangePressInput
+            if (WinActive(PSUWinTitle)) 
+            {
+                Send WeaponChangePressInput
+            }
             MProgress_WCC.Opt("+c0x" . Format("{:X}", WCV.Color[WCV.ColorOppositeLookup[ASV_ElemType]]))
             WeaponChangePressInputted := true
         }
         Else If (WCV.InputMode = 2)
         {
             WeaponChangePressInput := WCV.TypeText[WCV.ColorOppositeLookup[ASV_ElemType]]
-            Send "{Space}"
-            Send "{Text}" . WeaponChangePressInput
-            Send "{Enter}{Enter}{Enter}"
+            if (WinActive(PSUWinTitle)) 
+            {
+                Send "{Space}"
+                Send "{Text}" . WeaponChangePressInput
+                Send "{Enter}{Enter}{Enter}"
+            }
             MProgress_WCC.Opt("+c0x" . Format("{:X}", WCV.Color[WCV.ColorOppositeLookup[ASV_ElemType]]))
             WeaponChangePressInputted := true
         }
@@ -1348,6 +1409,86 @@ RunPSUFR(*)
     SetWorkingDir "C:\Program Files (x86)\Phantasy Star Universe Clementine\PSUFR 0.7.4"
     Run '*RunAs "C:\Program Files (x86)\Phantasy Star Universe Clementine\PSUFR 0.7.4\PSUFR.exe"'
     SetWorkingDir curdir
+}
+JAE_ToggleFeatureEnabled(*)
+{
+    global
+    if (MCheckBox_JAE.Value = 0)
+    {
+        SetTimer JAV_Loop, 0
+        JAV.Enabled := false
+        MStatusBar_MainStatus.SetText( "JA Disabled!" ,, 0)
+    }
+    Else
+    {
+        SetTimer JAV_Loop, JAV.Freq
+        JAV.Enabled := true
+        MStatusBar_MainStatus.SetText( "JA Enabled!" ,, 0)
+    }
+}
+PCE_ToggleFeatureEnabled(*)
+{
+    global
+    if (MCheckBox_PCE.Value = 0)
+    {
+        SetTimer PCV_Loop, 0
+        PCV.Enabled := false
+        MStatusBar_MainStatus.SetText( "PC Disabled!" ,, 0)
+    }
+    Else
+    {
+        SetTimer PCV_Loop, PCV.Freq
+        PCV.Enabled := true
+        MStatusBar_MainStatus.SetText( "PC Enabled!" ,, 0)
+    }
+}
+THE_ToggleFeatureEnabled(*)
+{
+    global
+    if (MCheckBox_THE.Value = 0)
+    {
+        SetTimer THV_Loop, 0
+        THV.Enabled := false
+        MStatusBar_MainStatus.SetText( "TH Disabled!" ,, 0)
+    }
+    Else
+    {
+        SetTimer THV_Loop, THV.Freq
+        THV.Enabled := true
+        MStatusBar_MainStatus.SetText( "TH Enabled!" ,, 0)
+    }
+}
+ASE_ToggleFeatureEnabled(*)
+{
+    global
+    if (MCheckBox_ASE.Value = 0)
+    {
+        SetTimer ASV_Loop, 0
+        ASV.Enabled := false
+        MStatusBar_MainStatus.SetText( "AS Disabled!" ,, 0)
+    }
+    Else
+    {
+        SetTimer ASV_Loop, ASV.Freq
+        ASV.Enabled := true
+        MStatusBar_MainStatus.SetText( "AS Enabled!" ,, 0)
+    }
+}
+WCE_ToggleFeatureEnabled(*)
+{
+    global
+    if (MCheckBox_WCE.Value = 0)
+    {
+        SetTimer WCV_Loop, 0
+        WCV.Enabled := false
+        MStatusBar_MainStatus.SetText( "WC Disabled!" ,, 0)
+    }
+    Else
+    {
+        SetTimer WCV_Loop, WCV.Freq
+        WCV.Enabled := true
+        MStatusBar_MainStatus.SetText( "WC Enabled!" ,, 0)
+    }
 }
 
 
@@ -1508,13 +1649,16 @@ JAGC_PressKeyChanged(*)
     {
         JAV.HotKey :=   MHotkey_JAPressKey.Value
         JAV.PressKey := ConvertHotKeyToKeyPress(MHotkey_JAPressKey.Value)
-    }    
+    }
 }
 JAGC_FreqChanged(*)
 {
     global
     JAV.Freq := MUpDown_JAFreq.Value
-    SetTimer JAV_Loop, JAV.Freq
+    if (JAV.Enabled = true)
+    {
+        SetTimer JAV_Loop, JAV.Freq
+    }
 }
 JAGC_ThreshChanged(*)
 {
@@ -1572,7 +1716,10 @@ PCGC_FreqChanged(*)
 {
     global
     PCV.Freq := MUpDown_PCFreq.Value
-    SetTimer PCV_Loop, PCV.Freq
+    if (PCV.Enabled = true)
+    {
+        SetTimer PCV_Loop, PCV.Freq
+    }
 }
 PCGC_TrigThreshChanged(*)
 {
@@ -1635,7 +1782,10 @@ THGC_FreqChanged(*)
 {
     global
     THV.Freq := MUpDown_THFreq.Value
-    SetTimer THV_Loop, THV.Freq
+    if (THV.Enabled = true)
+    {
+        SetTimer THV_Loop, THV.Freq
+    }
 }
 THGC_TrigThreshChanged(*)
 {
@@ -1690,7 +1840,10 @@ ASGC_FreqChanged(*)
 {
     global
     ASV.Freq := MUpDown_ASFreq.Value
-    SetTimer ASV_Loop, ASV.Freq
+    if (ASV.Enabled = true)
+    {
+        SetTimer ASV_Loop, ASV.Freq
+    }
 }
 ASGC_TrigThreshChanged(*)
 {
@@ -1961,7 +2114,10 @@ WCGC_FreqChanged(*)
 {
     global
     WCV.Freq := MUpDown_WCFreq.Value
-    SetTimer WCV_Loop, WCV.Freq
+    if (WCV.Enabled = true)
+    {
+        SetTimer WCV_Loop, WCV.Freq
+    }
 }
 WCGC_TrigThreshChanged(*)
 {
@@ -2450,8 +2606,7 @@ ConvertHotKeyToKeyPress(HotK)
         {
             StrBuilder := "{" . TmpStr . "}"
         }
-        ToolTip "KeyPress String: " . StrBuilder
-        SetTimer () => ToolTip(), -4000, 10000
+        ;MStatusBar_MainStatus.SetText( "KeyPress String: " . StrBuilder ,, 0)
         Return StrBuilder
     }
 }
@@ -2508,46 +2663,51 @@ LoadSettingsIni()
     global
     local iniFilePath := A_ScriptDir "\"  Conf.SettingsFile
 
-    JAG.XW := IniRead( iniFilePath, "JA", "JAG.XW", JAG.XW )
-    JAG.YW := IniRead( iniFilePath, "JA", "JAG.YW", JAG.YW )
-    JAG.W := IniRead( iniFilePath, "JA", "JAG.W", JAG.W )
-    JAG.H := IniRead( iniFilePath, "JA", "JAG.H", JAG.H )
-    JAG.WindowCanMove := IniRead( iniFilePath, "JA", "JAG.WindowCanMove", JAG.WindowCanMove )
-    JAV.Freq := IniRead( iniFilePath, "JA", "JAV.Freq", JAV.Freq )
-    JAV.Thresh := IniRead( iniFilePath, "JA", "JAV.Thresh", JAV.Thresh )
-    JAV.Delay := IniRead( iniFilePath, "JA", "JAV.Delay", JAV.Delay )
-    JAV.Hotkey := IniRead( iniFilePath, "JA", "JAV.Hotkey", JAV.Hotkey )
-    JAV.PressKey := ConvertHotKeyToKeyPress(JAV.HotKey)
+    JAG.XW                  := IniRead( iniFilePath, "JA", "JAG.XW", JAG.XW )
+    JAG.YW                  := IniRead( iniFilePath, "JA", "JAG.YW", JAG.YW )
+    JAG.W                   := IniRead( iniFilePath, "JA", "JAG.W", JAG.W )
+    JAG.H                   := IniRead( iniFilePath, "JA", "JAG.H", JAG.H )
+    JAG.WindowCanMove       := IniRead( iniFilePath, "JA", "JAG.WindowCanMove", JAG.WindowCanMove )
+    JAV.Enabled             := IniRead( iniFilePath, "JA", "JAV.Enabled", JAV.Enabled )
+    JAV.Freq                := IniRead( iniFilePath, "JA", "JAV.Freq", JAV.Freq )
+    JAV.Thresh              := IniRead( iniFilePath, "JA", "JAV.Thresh", JAV.Thresh )
+    JAV.Delay               := IniRead( iniFilePath, "JA", "JAV.Delay", JAV.Delay )
+    JAV.Hotkey              := IniRead( iniFilePath, "JA", "JAV.Hotkey", JAV.Hotkey )
+    JAV.PressKey            := ConvertHotKeyToKeyPress(JAV.HotKey)
 
-    PCG.XW := IniRead( iniFilePath, "PC", "PCG.XW", PCG.XW )
-    PCG.YW := IniRead( iniFilePath, "PC", "PCG.YW", PCG.YW )
-    PCG.W := IniRead( iniFilePath, "PC", "PCG.W", PCG.W )
-    PCG.H := IniRead( iniFilePath, "PC", "PCG.H", PCG.H )
-    PCG.WindowCanMove := IniRead( iniFilePath, "PC", "PCG.WindowCanMove", PCG.WindowCanMove )
-    PCV.Freq := IniRead( iniFilePath, "PC", "PCV.Freq", PCV.Freq )
-    PCV.PPThresh := IniRead( iniFilePath, "PC", "PCV.PPThresh", PCV.PPThresh )
-    PCV.TrigThresh := IniRead( iniFilePath, "PC", "PCV.TrigThresh", PCV.TrigThresh )
-    PCV.Delay := IniRead( iniFilePath, "PC", "PCV.Delay", PCV.Delay )
-    PCV.Hotkey := IniRead( iniFilePath, "PC", "PCV.Hotkey", PCV.HotKey )
-    PCV.PressKey := ConvertHotKeyToKeyPress(PCV.HotKey)
+    PCG.XW                  := IniRead( iniFilePath, "PC", "PCG.XW", PCG.XW )
+    PCG.YW                  := IniRead( iniFilePath, "PC", "PCG.YW", PCG.YW )
+    PCG.W                   := IniRead( iniFilePath, "PC", "PCG.W", PCG.W )
+    PCG.H                   := IniRead( iniFilePath, "PC", "PCG.H", PCG.H )
+    PCG.WindowCanMove       := IniRead( iniFilePath, "PC", "PCG.WindowCanMove", PCG.WindowCanMove )
+    PCV.Enabled             := IniRead( iniFilePath, "PC", "PCV.Enabled", PCV.Enabled )
+    PCV.Freq                := IniRead( iniFilePath, "PC", "PCV.Freq", PCV.Freq )
+    PCV.PPThresh            := IniRead( iniFilePath, "PC", "PCV.PPThresh", PCV.PPThresh )
+    PCV.TrigThresh          := IniRead( iniFilePath, "PC", "PCV.TrigThresh", PCV.TrigThresh )
+    PCV.Delay               := IniRead( iniFilePath, "PC", "PCV.Delay", PCV.Delay )
+    PCV.Hotkey              := IniRead( iniFilePath, "PC", "PCV.Hotkey", PCV.HotKey )
+    PCV.PressKey            := ConvertHotKeyToKeyPress(PCV.HotKey)
 
-    THG.XW := IniRead( iniFilePath, "TH", "THG.XW", THG.XW )
-    THG.YW := IniRead( iniFilePath, "TH", "THG.YW", THG.YW )
-    THG.W := IniRead( iniFilePath, "TH", "THG.W", THG.W )
-    THG.H := IniRead( iniFilePath, "TH", "THG.H", THG.H )
-    THG.WindowCanMove := IniRead( iniFilePath, "TH", "THG.WindowCanMove", THG.WindowCanMove )
-    THV.Freq := IniRead( iniFilePath, "TH", "THV.Freq", THV.Freq )
-    THV.HPThresh := IniRead( iniFilePath, "TH", "THV.PPThresh", THV.HPThresh )
-    THV.TrigThresh := IniRead( iniFilePath, "TH", "THV.TrigThresh", THV.TrigThresh )
-    THV.Delay := IniRead( iniFilePath, "TH", "THV.Delay", THV.Delay )
-    THV.Hotkey := IniRead( iniFilePath, "TH", "THV.Hotkey", THV.HotKey )
-    THV.PressKey := ConvertHotKeyToKeyPress(THV.HotKey)
+    THG.XW                  := IniRead( iniFilePath, "TH", "THG.XW", THG.XW )
+    THG.YW                  := IniRead( iniFilePath, "TH", "THG.YW", THG.YW )
+    THG.W                   := IniRead( iniFilePath, "TH", "THG.W", THG.W )
+    THG.H                   := IniRead( iniFilePath, "TH", "THG.H", THG.H )
+    THG.WindowCanMove       := IniRead( iniFilePath, "TH", "THG.WindowCanMove", THG.WindowCanMove )
+    THV.Enabled             := IniRead( iniFilePath, "TH", "THV.Enabled", THV.Enabled )
+    THV.Freq                := IniRead( iniFilePath, "TH", "THV.Freq", THV.Freq )
+    THV.HPThresh            := IniRead( iniFilePath, "TH", "THV.PPThresh", THV.HPThresh )
+    THV.TrigThresh          := IniRead( iniFilePath, "TH", "THV.TrigThresh", THV.TrigThresh )
+    THV.Delay               := IniRead( iniFilePath, "TH", "THV.Delay", THV.Delay )
+    THV.Hotkey              := IniRead( iniFilePath, "TH", "THV.Hotkey", THV.HotKey )
+    THV.PressKey            := ConvertHotKeyToKeyPress(THV.HotKey)
 
-    ASG.XW := IniRead( iniFilePath, "AS", "ASG.XW", ASG.XW )
-    ASG.YW := IniRead( iniFilePath, "AS", "ASG.YW", ASG.YW )
-    ASG.W := IniRead( iniFilePath, "AS", "ASG.W", ASG.W )
-    ASG.H := IniRead( iniFilePath, "AS", "ASG.H", ASG.H )
-    ASG.WindowCanMove := IniRead( iniFilePath, "AS", "ASG.WindowCanMove", ASG.WindowCanMove )
+    ASG.XW                  := IniRead( iniFilePath, "AS", "ASG.XW", ASG.XW )
+    ASG.YW                  := IniRead( iniFilePath, "AS", "ASG.YW", ASG.YW )
+    ASG.W                   := IniRead( iniFilePath, "AS", "ASG.W", ASG.W )
+    ASG.H                   := IniRead( iniFilePath, "AS", "ASG.H", ASG.H )
+    ASG.WindowCanMove       := IniRead( iniFilePath, "AS", "ASG.WindowCanMove", ASG.WindowCanMove )
+    ASV.Enabled             := IniRead( iniFilePath, "AS", "ASV.Enabled", ASV.Enabled )
+    ASV.InputMode           := IniRead( iniFilePath, "AS", "ASV.InputMode", ASV.InputMode )
     ASV.Color.InsertAt( ASV.ColorLookup["Fire"],        IniRead( iniFilePath, "AS", "ASV.Color." . "Fire",          0xFE7878 ) )
     ASV.Color.InsertAt( ASV.ColorLookup["Ice"],         IniRead( iniFilePath, "AS", "ASV.Color." . "Ice",           0x7272FF ) )
     ASV.Color.InsertAt( ASV.ColorLookup["Lightning"],   IniRead( iniFilePath, "AS", "ASV.Color." . "Lightning",     0xDADA2B ) )
@@ -2567,11 +2727,13 @@ LoadSettingsIni()
     ASV.TypeText.InsertAt( ASV.ColorLookup["Dark"],     IniRead( iniFilePath, "AS", "ASV.TypeText." . "Dark",       "/sl d" ) )
     ASV.TypeText.InsertAt( ASV.ColorLookup["Light"],    IniRead( iniFilePath, "AS", "ASV.TypeText." . "Light",      "/sl l" ) )
     
-    WCG.XW := IniRead( iniFilePath, "WC", "WCG.XW", WCG.XW )
-    WCG.YW := IniRead( iniFilePath, "WC", "WCG.YW", WCG.YW )
-    WCG.W := IniRead( iniFilePath, "WC", "WCG.W", WCG.W )
-    WCG.H := IniRead( iniFilePath, "WC", "WCG.H", WCG.H )
-    WCG.WindowCanMove := IniRead( iniFilePath, "WC", "WCG.WindowCanMove", WCG.WindowCanMove )
+    WCG.XW                  := IniRead( iniFilePath, "WC", "WCG.XW", WCG.XW )
+    WCG.YW                  := IniRead( iniFilePath, "WC", "WCG.YW", WCG.YW )
+    WCG.W                   := IniRead( iniFilePath, "WC", "WCG.W", WCG.W )
+    WCG.H                   := IniRead( iniFilePath, "WC", "WCG.H", WCG.H )
+    WCG.WindowCanMove       := IniRead( iniFilePath, "WC", "WCG.WindowCanMove", WCG.WindowCanMove )
+    WCV.Enabled             := IniRead( iniFilePath, "WC", "WCV.Enabled", WCV.Enabled )
+    WCV.InputMode           := IniRead( iniFilePath, "WC", "WCV.InputMode", WCV.InputMode )
     WCV.Color.InsertAt( WCV.ColorLookup["Fire"],        IniRead( iniFilePath, "WC", "WCV.Color." . "Fire",          0xFE7878 ) )
     WCV.Color.InsertAt( WCV.ColorLookup["Ice"],         IniRead( iniFilePath, "WC", "WCV.Color." . "Ice",           0x7D7DFF ) )
     WCV.Color.InsertAt( WCV.ColorLookup["Lightning"],   IniRead( iniFilePath, "WC", "WCV.Color." . "Lightning",     0xFFFF32 ) )
@@ -2599,91 +2761,96 @@ SaveSettingsIni(*)
     local X, Y
 
     JAG.GUI.GetPos( &X, &Y )
-    IniWrite  X, iniFilePath, "JA", "JAG.XW"
-    IniWrite  Y, iniFilePath, "JA", "JAG.YW"
-    IniWrite  JAG.W, iniFilePath, "JA", "JAG.W"
-    IniWrite  JAG.H, iniFilePath, "JA", "JAG.H"
-    IniWrite  JAG.WindowCanMove, iniFilePath, "JA", "JAG.WindowCanMove"
-    IniWrite  JAV.Freq, iniFilePath, "JA", "JAV.Freq"
-    IniWrite  JAV.Thresh, iniFilePath, "JA", "JAV.Thresh"
-    IniWrite  JAV.Delay, iniFilePath, "JA", "JAV.Delay"
-    IniWrite  JAV.HotKey, iniFilePath, "JA", "JAV.HotKey"
+    IniWrite  X,                    iniFilePath, "JA", "JAG.XW"
+    IniWrite  Y,                    iniFilePath, "JA", "JAG.YW"
+    IniWrite  JAG.W,                iniFilePath, "JA", "JAG.W"
+    IniWrite  JAG.H,                iniFilePath, "JA", "JAG.H"
+    IniWrite  JAG.WindowCanMove,    iniFilePath, "JA", "JAG.WindowCanMove"
+    IniWrite  JAV.Enabled,          iniFilePath, "JA", "JAV.Enabled"
+    IniWrite  JAV.Freq,             iniFilePath, "JA", "JAV.Freq"
+    IniWrite  JAV.Thresh,           iniFilePath, "JA", "JAV.Thresh"
+    IniWrite  JAV.Delay,            iniFilePath, "JA", "JAV.Delay"
+    IniWrite  JAV.HotKey,           iniFilePath, "JA", "JAV.HotKey"
 
     PCG.GUI.GetPos( &X, &Y )
-    IniWrite  X, iniFilePath, "PC", "PCG.XW"
-    IniWrite  Y, iniFilePath, "PC", "PCG.YW"
-    IniWrite  PCG.W, iniFilePath, "PC", "PCG.W"
-    IniWrite  PCG.H, iniFilePath, "PC", "PCG.H"
-    IniWrite  PCG.WindowCanMove, iniFilePath, "PC", "PCG.WindowCanMove"
-    IniWrite  PCV.Freq, iniFilePath, "PC", "PCV.Freq"
-    IniWrite  PCV.PPThresh, iniFilePath, "PC", "PCV.PPThresh"
-    IniWrite  PCV.TrigThresh, iniFilePath, "PC", "PCV.TrigThresh"
-    IniWrite  PCV.Delay, iniFilePath, "PC", "PCV.Delay"
-    IniWrite  PCV.HotKey, iniFilePath, "PC", "PCV.HotKey"
+    IniWrite  X,                    iniFilePath, "PC", "PCG.XW"
+    IniWrite  Y,                    iniFilePath, "PC", "PCG.YW"
+    IniWrite  PCG.W,                iniFilePath, "PC", "PCG.W"
+    IniWrite  PCG.H,                iniFilePath, "PC", "PCG.H"
+    IniWrite  PCG.WindowCanMove,    iniFilePath, "PC", "PCG.WindowCanMove"
+    IniWrite  PCV.Enabled,          iniFilePath, "PC", "PCV.Enabled"
+    IniWrite  PCV.Freq,             iniFilePath, "PC", "PCV.Freq"
+    IniWrite  PCV.PPThresh,         iniFilePath, "PC", "PCV.PPThresh"
+    IniWrite  PCV.TrigThresh,       iniFilePath, "PC", "PCV.TrigThresh"
+    IniWrite  PCV.Delay,            iniFilePath, "PC", "PCV.Delay"
+    IniWrite  PCV.HotKey,           iniFilePath, "PC", "PCV.HotKey"
     
     THG.GUI.GetPos( &X, &Y )
-    IniWrite  X, iniFilePath, "TH", "THG.XW"
-    IniWrite  Y, iniFilePath, "TH", "THG.YW"
-    IniWrite  THG.W, iniFilePath, "TH", "THG.W"
-    IniWrite  THG.H, iniFilePath, "TH", "THG.H"
-    IniWrite  THG.WindowCanMove, iniFilePath, "TH", "THG.WindowCanMove"
-    IniWrite  THV.Freq, iniFilePath, "TH", "THV.Freq"
-    IniWrite  THV.HPThresh, iniFilePath, "TH", "THV.HPThresh"
-    IniWrite  THV.TrigThresh, iniFilePath, "TH", "THV.TrigThresh"
-    IniWrite  THV.Delay, iniFilePath, "TH", "THV.Delay"
-    IniWrite  THV.HotKey, iniFilePath, "TH", "THV.HotKey"
+    IniWrite  X,                    iniFilePath, "TH", "THG.XW"
+    IniWrite  Y,                    iniFilePath, "TH", "THG.YW"
+    IniWrite  THG.W,                iniFilePath, "TH", "THG.W"
+    IniWrite  THG.H,                iniFilePath, "TH", "THG.H"
+    IniWrite  THG.WindowCanMove,    iniFilePath, "TH", "THG.WindowCanMove"
+    IniWrite  THV.Enabled,          iniFilePath, "TH", "THV.Enabled"
+    IniWrite  THV.Freq,             iniFilePath, "TH", "THV.Freq"
+    IniWrite  THV.HPThresh,         iniFilePath, "TH", "THV.HPThresh"
+    IniWrite  THV.TrigThresh,       iniFilePath, "TH", "THV.TrigThresh"
+    IniWrite  THV.Delay,            iniFilePath, "TH", "THV.Delay"
+    IniWrite  THV.HotKey,           iniFilePath, "TH", "THV.HotKey"
     
     ASG.GUI.GetPos( &X, &Y )
-    IniWrite  X, iniFilePath, "AS", "ASG.XW"
-    IniWrite  Y, iniFilePath, "AS", "ASG.YW"
-    IniWrite  ASG.W, iniFilePath, "AS", "ASG.W"
-    IniWrite  ASG.H, iniFilePath, "AS", "ASG.H"
-    IniWrite  ASG.WindowCanMove, iniFilePath, "AS", "ASG.WindowCanMove"
-    IniWrite  ASV.Color[1], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[1]
-    IniWrite  ASV.Color[2], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[2]
-    IniWrite  ASV.Color[3], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[3]
-    IniWrite  ASV.Color[4], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[4]
-    IniWrite  ASV.Color[5], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[5]
-    IniWrite  ASV.Color[6], iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[6]
-    IniWrite  ASV.HotKey[1], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[1]
-    IniWrite  ASV.HotKey[2], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[2]
-    IniWrite  ASV.HotKey[3], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[3]
-    IniWrite  ASV.HotKey[4], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[4]
-    IniWrite  ASV.HotKey[5], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[5]
-    IniWrite  ASV.HotKey[6], iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[6]
-    IniWrite  ASV.TypeText[1], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[1]
-    IniWrite  ASV.TypeText[2], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[2]
-    IniWrite  ASV.TypeText[3], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[3]
-    IniWrite  ASV.TypeText[4], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[4]
-    IniWrite  ASV.TypeText[5], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[5]
-    IniWrite  ASV.TypeText[6], iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[6]
-    IniWrite  ASV.InputMode, iniFilePath, "AS", "ASV.InputMode"
+    IniWrite  X,                    iniFilePath, "AS", "ASG.XW"
+    IniWrite  Y,                    iniFilePath, "AS", "ASG.YW"
+    IniWrite  ASG.W,                iniFilePath, "AS", "ASG.W"
+    IniWrite  ASG.H,                iniFilePath, "AS", "ASG.H"
+    IniWrite  ASG.WindowCanMove,    iniFilePath, "AS", "ASG.WindowCanMove"
+    IniWrite  ASV.Enabled,          iniFilePath, "AS", "ASV.Enabled"
+    IniWrite  ASV.InputMode,        iniFilePath, "AS", "ASV.InputMode"
+    IniWrite  ASV.Color[1],         iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[1]
+    IniWrite  ASV.Color[2],         iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[2]
+    IniWrite  ASV.Color[3],         iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[3]
+    IniWrite  ASV.Color[4],         iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[4]
+    IniWrite  ASV.Color[5],         iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[5]
+    IniWrite  ASV.Color[6],         iniFilePath, "AS", "ASV.Color." . ASV.ColorRevLookup[6]
+    IniWrite  ASV.HotKey[1],        iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[1]
+    IniWrite  ASV.HotKey[2],        iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[2]
+    IniWrite  ASV.HotKey[3],        iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[3]
+    IniWrite  ASV.HotKey[4],        iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[4]
+    IniWrite  ASV.HotKey[5],        iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[5]
+    IniWrite  ASV.HotKey[6],        iniFilePath, "AS", "ASV.HotKey." . ASV.ColorRevLookup[6]
+    IniWrite  ASV.TypeText[1],      iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[1]
+    IniWrite  ASV.TypeText[2],      iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[2]
+    IniWrite  ASV.TypeText[3],      iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[3]
+    IniWrite  ASV.TypeText[4],      iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[4]
+    IniWrite  ASV.TypeText[5],      iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[5]
+    IniWrite  ASV.TypeText[6],      iniFilePath, "AS", "ASV.TypeText." . ASV.ColorRevLookup[6]
     
     WCG.GUI.GetPos( &X, &Y )
-    IniWrite  X, iniFilePath, "WC", "WCG.XW"
-    IniWrite  Y, iniFilePath, "WC", "WCG.YW"
-    IniWrite  WCG.W, iniFilePath, "WC", "WCG.W"
-    IniWrite  WCG.H, iniFilePath, "WC", "WCG.H"
-    IniWrite  WCG.WindowCanMove, iniFilePath, "WC", "WCG.WindowCanMove"
-    IniWrite  WCV.Color[1], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[1]
-    IniWrite  WCV.Color[2], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[2]
-    IniWrite  WCV.Color[3], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[3]
-    IniWrite  WCV.Color[4], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[4]
-    IniWrite  WCV.Color[5], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[5]
-    IniWrite  WCV.Color[6], iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[6]
-    IniWrite  WCV.HotKey[1], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[1]
-    IniWrite  WCV.HotKey[2], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[2]
-    IniWrite  WCV.HotKey[3], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[3]
-    IniWrite  WCV.HotKey[4], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[4]
-    IniWrite  WCV.HotKey[5], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[5]
-    IniWrite  WCV.HotKey[6], iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[6]
-    IniWrite  WCV.TypeText[1], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[1]
-    IniWrite  WCV.TypeText[2], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[2]
-    IniWrite  WCV.TypeText[3], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[3]
-    IniWrite  WCV.TypeText[4], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[4]
-    IniWrite  WCV.TypeText[5], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[5]
-    IniWrite  WCV.TypeText[6], iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[6]
-    IniWrite  WCV.InputMode, iniFilePath, "WC", "WCV.InputMode"
+    IniWrite  X,                    iniFilePath, "WC", "WCG.XW"
+    IniWrite  Y,                    iniFilePath, "WC", "WCG.YW"
+    IniWrite  WCG.W,                iniFilePath, "WC", "WCG.W"
+    IniWrite  WCG.H,                iniFilePath, "WC", "WCG.H"
+    IniWrite  WCG.WindowCanMove,    iniFilePath, "WC", "WCG.WindowCanMove"
+    IniWrite  WCV.Enabled,          iniFilePath, "WC", "WCV.Enabled"
+    IniWrite  WCV.InputMode,        iniFilePath, "WC", "WCV.InputMode"
+    IniWrite  WCV.Color[1],         iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[1]
+    IniWrite  WCV.Color[2],         iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[2]
+    IniWrite  WCV.Color[3],         iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[3]
+    IniWrite  WCV.Color[4],         iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[4]
+    IniWrite  WCV.Color[5],         iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[5]
+    IniWrite  WCV.Color[6],         iniFilePath, "WC", "WCV.Color." . WCV.ColorRevLookup[6]
+    IniWrite  WCV.HotKey[1],        iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[1]
+    IniWrite  WCV.HotKey[2],        iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[2]
+    IniWrite  WCV.HotKey[3],        iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[3]
+    IniWrite  WCV.HotKey[4],        iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[4]
+    IniWrite  WCV.HotKey[5],        iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[5]
+    IniWrite  WCV.HotKey[6],        iniFilePath, "WC", "WCV.HotKey." . WCV.ColorRevLookup[6]
+    IniWrite  WCV.TypeText[1],      iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[1]
+    IniWrite  WCV.TypeText[2],      iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[2]
+    IniWrite  WCV.TypeText[3],      iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[3]
+    IniWrite  WCV.TypeText[4],      iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[4]
+    IniWrite  WCV.TypeText[5],      iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[5]
+    IniWrite  WCV.TypeText[6],      iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[6]
 }
 
 
@@ -2693,5 +2860,4 @@ ExitFunc(ExitReason, ExitCode)
 {
     Send "{Right up}{F9 up}{F8 up}{Shift up}"
 }
-
 
