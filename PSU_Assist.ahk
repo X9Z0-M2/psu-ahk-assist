@@ -91,6 +91,39 @@ THV.PressKey := ConvertHotKeyToKeyPress(THV.HotKey)
 THG.SkipGuiResize := 0
 THG.WindowCanMove := 1
 
+global MBG := {}
+global MBV := {}
+MBG.X := 0
+MBG.Y := 0
+MBG.XW := 0
+MBG.YW := 0
+MBG.MX := 0
+MBG.MY := 0
+MBG.W := 130
+MBG.H := 1
+MBV.Enabled := true
+MBV.Freq := 400
+MBV.TrigThresh := 2
+MBV.DurationNextTry := 500
+MBV.Delay := 0
+MBV.CanChange := 1
+MBV.Shifta := 0
+MBV.Deband := 0
+MBV.Zodial := 0
+MBV.Retier := 0
+MBV.ShiftaCount := 0
+MBV.DebandCount := 0
+MBV.ZodialCount := 0
+MBV.RetierCount := 0
+MBV.ShiftaColor := 0xFF2138
+MBV.DebandColor := 0x3B42FF
+MBV.ZodialColor := 0xFFED00
+MBV.RetierColor := 0xFFCDB4
+MBV.HotKey := "+F7"
+MBV.PressKey := ConvertHotKeyToKeyPress(MBV.HotKey)
+MBG.SkipGuiResize := 0
+MBG.WindowCanMove := 1
+
 global ASG := {}
 global ASV := {}
 ASG.X := 0
@@ -225,13 +258,16 @@ LoadSettingsIni
 
 
 ; ; Create custom gui to control all script components
-Menu_Gui := Gui("+AlwaysOnTop +MinSize50x50 +MaxSize900x900 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu -DPIScale", "PSU AIO Assistant")
+Menu_Gui := Gui("+AlwaysOnTop +MinSize50x50 +MaxSize900x900 +Resize +ToolWindow -MaximizeBox -MinimizeBox -DPIScale", "PSU AIO Assistant")
 Menu_Gui.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
 FileMenu := Menu()
 FileMenu.Add("&Save", SaveSettingsIni)
+FileMenu.Add("&Exit", ExitAssistant)
 MyMenuBar := MenuBar()
 MyMenuBar.Add("&File", FileMenu)
 Menu_Gui.MenuBar := MyMenuBar
+Menu_Gui.OnEvent("Close", ExitAssistant)
+
 
 MButton_StartPSU := Menu_Gui.Add("Button", , "Start PSU")
 MButton_StartPSU.OnEvent("Click", StartPSU)
@@ -258,35 +294,48 @@ MCheckBox_THE := Menu_Gui.Add("CheckBox", "YS68 XS126 w20 h10 c0x666666 vTrimate
 MCheckBox_THE.OnEvent("Click", THE_ToggleFeatureEnabled)
 MCheckBox_THE.Value := THV.Enabled = true ? 1 : 0
 
-MProgress_AS  := Menu_Gui.Add("Progress", "YS89 XS0 w100 h16 c0x666666 Smooth vArmorSwapProgress", -1)
-MProgress_ASC := Menu_Gui.Add("Progress", "YS89 XS103 w20 h16 c0x666666 Smooth vArmorSwapCurrent", -1)
-MCheckBox_ASE := Menu_Gui.Add("CheckBox", "YS89 XS126 w20 h10 c0x666666 vArmorSwapEnable", -1)
+MProgress_MB  := Menu_Gui.Add("Progress", "YS89 XS0 w100 h16 c0x4b006c Smooth vMegistarideBuffProgress", -1)
+MProgress_MBCS:= Menu_Gui.Add("Progress", "YS89 XS103 w6 h16 c0x666666 Smooth vMegistarideBuffCurrentShifta", -1)
+MProgress_MBCD:= Menu_Gui.Add("Progress", "YS89 XS108 w6 h16 c0x666666 Smooth vMegistarideBuffCurrentDeband", -1)
+MProgress_MBCZ:= Menu_Gui.Add("Progress", "YS89 XS113 w6 h16 c0x666666 Smooth vMegistarideBuffCurrentZodial", -1)
+MProgress_MBCR:= Menu_Gui.Add("Progress", "YS89 XS118 w6 h16 c0x666666 Smooth vMegistarideBuffCurrentRetier", -1)
+MCheckBox_MBE := Menu_Gui.Add("CheckBox", "YS89 XS126 w20 h10 c0x666666 vMegistarideBuffEnable", -1)
+MCheckBox_MBE.OnEvent("Click", MBE_ToggleFeatureEnabled)
+MCheckBox_MBE.Value := MBV.Enabled = true ? 1 : 0
+
+MProgress_AS  := Menu_Gui.Add("Progress", "YS110 XS0 w100 h16 c0x666666 Smooth vArmorSwapProgress", -1)
+MProgress_ASC := Menu_Gui.Add("Progress", "YS110 XS103 w20 h16 c0x666666 Smooth vArmorSwapCurrent", -1)
+MCheckBox_ASE := Menu_Gui.Add("CheckBox", "YS110 XS126 w20 h10 c0x666666 vArmorSwapEnable", -1)
 MCheckBox_ASE.OnEvent("Click", ASE_ToggleFeatureEnabled)
 MCheckBox_ASE.Value := ASV.Enabled = true ? 1 : 0
 
-MProgress_WC  := Menu_Gui.Add("Progress", "YS110 XS0 w100 h16 c0x666666 Smooth vWeaponChangeProgress", -1)
-MProgress_WCC := Menu_Gui.Add("Progress", "YS110 XS103 w20 h16 c0x666666 Smooth vWeaponChangeCurrent", -1)
-MCheckBox_WCE := Menu_Gui.Add("CheckBox", "YS110 XS126 w20 h10 c0x666666 vWeaponChangeEnable", -1)
+MProgress_WC  := Menu_Gui.Add("Progress", "YS131 XS0 w100 h16 c0x666666 Smooth vWeaponChangeProgress", -1)
+MProgress_WCC := Menu_Gui.Add("Progress", "YS131 XS103 w20 h16 c0x666666 Smooth vWeaponChangeCurrent", -1)
+MCheckBox_WCE := Menu_Gui.Add("CheckBox", "YS131 XS126 w20 h10 c0x666666 vWeaponChangeEnable", -1)
 MCheckBox_WCE.OnEvent("Click", WCE_ToggleFeatureEnabled)
 MCheckBox_WCE.Value := WCV.Enabled = true ? 1 : 0
 
 MProgress_JAC.Value := 100
 MProgress_PCC.Value := 100
 MProgress_THC.Value := 100
+MProgress_MBCS.Value := 100
+MProgress_MBCD.Value := 100
+MProgress_MBCZ.Value := 100
+MProgress_MBCR.Value := 100
 MProgress_ASC.Value := 100
 MProgress_WCC.Value := 100
 
 MStatusBar_MainStatus := Menu_Gui.Add("StatusBar", "vMainStatusBar", "")
 
-MTab_Settings := Menu_Gui.Add("Tab3","-Wrap XS w130", ["JA","PC","TH","AS","AS Keys","AS Clrs","WC","WC Keys","WC Clrs"])
+MTab_Settings := Menu_Gui.Add("Tab3","-Wrap XS w130", ["JA","PC","TH","MB","AS","AS Keys","AS Clrs","WC","WC Keys","WC Clrs"])
 
 MTab_Settings.UseTab(1)
 MButton_ShowJA := Menu_Gui.Add("Button", "", "Hide JA")
 MButton_ShowJA.OnEvent("Click", JAGC_AllowMoveWindow)
-MButton_ShowJA := Menu_Gui.Add("Button", "", "Sim JA")
-MButton_ShowJA.OnEvent("Click", JAGC_AllowMoveWindow)
+MButton_UseJA := Menu_Gui.Add("Button", "YP0 XP56", "Use JA")
+MButton_UseJA.OnEvent("Click", JustAttackGuiUse)
 
-Menu_Gui.Add("Text", , "JA Key")
+Menu_Gui.Add("Text", "YP29 XP-56", "JA Key")
 MHotkey_JAPressKey := Menu_Gui.Add("Hotkey", "w110 vJAPressKeyHotkey", JAV.HotKey)
 MHotkey_JAPressKey.OnEvent("Change", JAGC_PressKeyChanged)
 
@@ -311,11 +360,14 @@ MUpDown_JAVert.OnEvent("Change", JAGC_VertChanged)
 MUpDown_JAHorz := Menu_Gui.Add("UpDown", "XS35 W45 vJAVHorzUpDown Horz Range-1-1", 0)
 MUpDown_JAHorz.OnEvent("Change", JAGC_HorzChanged)
 
+
 MTab_Settings.UseTab(2)
 MButton_ShowPC := Menu_Gui.Add("Button", "", "Hide PC")
 MButton_ShowPC.OnEvent("Click", PCGC_AllowMoveWindow)
+MButton_UsePC := Menu_Gui.Add("Button", "YP0 XP56", "Use PC")
+MButton_UsePC.OnEvent("Click", PhotonChargeGuiUse)
 
-Menu_Gui.Add("Text", , "PC Key")
+Menu_Gui.Add("Text", "YP29 XP-56", "PC Key")
 MHotkey_PCPressKey := Menu_Gui.Add("Hotkey", "w110 vPCPressKeyHotkey", PCV.HotKey)
 MHotkey_PCPressKey.OnEvent("Change", PCGC_PressKeyChanged)
 
@@ -344,11 +396,14 @@ MUpDown_PCVert.OnEvent("Change", PCGC_VertChanged)
 MUpDown_PCHorz := Menu_Gui.Add("UpDown", "XS35 W45 vPCVHorzUpDown Horz Range-1-1", 0)
 MUpDown_PCHorz.OnEvent("Change", PCGC_HorzChanged)
 
+
 MTab_Settings.UseTab(3)
 MButton_ShowTH := Menu_Gui.Add("Button", "", "Hide TH")
 MButton_ShowTH.OnEvent("Click", THGC_AllowMoveWindow)
+MButton_UseTH := Menu_Gui.Add("Button", "YP0 XP56", "Use TH")
+MButton_UseTH.OnEvent("Click", TrimateHealGuiUse)
 
-Menu_Gui.Add("Text", , "TH Key")
+Menu_Gui.Add("Text", "YP29 XP-56", "TH Key")
 MHotkey_THPressKey := Menu_Gui.Add("Hotkey", "w110 vTHPressKeyHotkey", THV.HotKey)
 MHotkey_THPressKey.OnEvent("Change", THGC_PressKeyChanged)
 
@@ -378,7 +433,45 @@ MUpDown_THVert.OnEvent("Change", THGC_VertChanged)
 MUpDown_THHorz := Menu_Gui.Add("UpDown", "Y+6 XS35 W45 vTHVHorzUpDown Horz Range-1-1", 0)
 MUpDown_THHorz.OnEvent("Change", THGC_HorzChanged)
 
+
 MTab_Settings.UseTab(4)
+MButton_ShowMB := Menu_Gui.Add("Button", "", "Hide MB")
+MButton_ShowMB.OnEvent("Click", MBGC_AllowMoveWindow)
+MButton_UseMB := Menu_Gui.Add("Button", "YP0 XP56", "Use MB")
+MButton_UseMB.OnEvent("Click", MegistarideBuffGuiUse)
+
+Menu_Gui.Add("Text", "YP29 XP-56", "MB Key")
+MHotkey_MBPressKey := Menu_Gui.Add("Hotkey", "w110 vMBPressKeyHotkey", MBV.HotKey)
+MHotkey_MBPressKey.OnEvent("Change", MBGC_PressKeyChanged)
+
+Menu_Gui.Add("Text", , "Frequency (ms)")
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", MBGC_FreqChanged)
+MUpDown_MBFreq := Menu_Gui.Add("UpDown", "vMBFreqUpDown Range1-1000", MBV.Freq)
+MUpDown_MBFreq.OnEvent("Change", MBGC_FreqChanged)
+
+Menu_Gui.Add("Text", , "Trigger Threshold")
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", MBGC_TrigThreshChanged)
+MUpDown_MBTrigThresh := Menu_Gui.Add("UpDown", "vMBTrigThreshUpDown Range0-50", MBV.TrigThresh)
+MUpDown_MBTrigThresh.OnEvent("Change", MBGC_TrigThreshChanged)
+
+Menu_Gui.Add("Text", , "Time Before Retry")
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", MBGC_DurationNextTryChanged)
+MUpDown_MBDurationNextTry := Menu_Gui.Add("UpDown", "vMBDurationNextTryUpDown Range0-60000", MBV.DurationNextTry)
+MUpDown_MBDurationNextTry.OnEvent("Change", MBGC_DurationNextTryChanged)
+
+Menu_Gui.Add("Text", , "Input Delay (ms)")
+Menu_Gui.Add("Edit", "w50").OnEvent("Change", MBGC_DelayChanged)
+MUpDown_MBDelay :=Menu_Gui.Add("UpDown", "vMBDelayUpDown Range0-500", MBV.Delay)
+MUpDown_MBDelay.OnEvent("Change", MBGC_DelayChanged)
+
+Menu_Gui.Add("Text", , "Position Detect Line")
+MUpDown_MBVert := Menu_Gui.Add("UpDown", "-16 H40 vMBVertUpDown Range-1-1", 0)
+MUpDown_MBVert.OnEvent("Change", MBGC_VertChanged)
+MUpDown_MBHorz := Menu_Gui.Add("UpDown", "Y+6 XS35 W45 vMBVHorzUpDown Horz Range-1-1", 0)
+MUpDown_MBHorz.OnEvent("Change", MBGC_HorzChanged)
+
+
+MTab_Settings.UseTab(5)
 MButton_ShowAS := Menu_Gui.Add("Button", "", "Hide AS")
 MButton_ShowAS.OnEvent("Click", ArmorSwapAllowMoveWindow)
 
@@ -408,36 +501,49 @@ MUpDown_ASVert.OnEvent("Change", ASGC_VertChanged)
 MUpDown_ASHorz := Menu_Gui.Add("UpDown", "Y+6 XS35 W45 vASVHorzUpDown Horz Range-1-1", 0)
 MUpDown_ASHorz.OnEvent("Change", ASGC_HorzChanged)
 
-MTab_Settings.UseTab(5)
+
+MTab_Settings.UseTab(6)
 Menu_Gui.Add("Text", , "Input Mode")
 MDDList_ASPressKeyInputMode := Menu_Gui.Add("DropDownList", "w75 Choose" . ASV.InputMode, ["HotKey","TypeText"])
 MDDList_ASPressKeyInputMode.OnEvent("Change", ASGC_PressKeyInputModeChanged)
 Menu_Gui.Add("Text", "Section", "FIRE")
+MButton_UseASF := Menu_Gui.Add("Button", "YP-4 XP56", "Use AS")
+MButton_UseASF.OnEvent("Click", ArmorSwapGuiUseFire)
 MHotkey_ASPressKeyElemFire := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemFireHotkey", ASV.HotKey[1])
 MHotkey_ASPressKeyElemFire.OnEvent("Change", ASGC_ElemFirePressKeyChanged)
 MText_ASTypeInputElemFire := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemFireText", ASV.TypeText[1])
 MText_ASTypeInputElemFire.OnEvent("Change", ASGC_ElemFireTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "ICE")
+MButton_UseASI := Menu_Gui.Add("Button", "YP-4 XP56", "Use AS")
+MButton_UseASI.OnEvent("Click", ArmorSwapGuiUseIce)
 MHotkey_ASPressKeyElemIce := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemIceHotkey", ASV.HotKey[2])
 MHotkey_ASPressKeyElemIce.OnEvent("Change", ASGC_ElemIcePressKeyChanged)
 MText_ASTypeInputElemIce := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemIceText", ASV.TypeText[2])
 MText_ASTypeInputElemIce.OnEvent("Change", ASGC_ElemIceTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "LIGHTNING")
+MButton_UseASLG := Menu_Gui.Add("Button", "YP-4 XP56", "Use AS")
+MButton_UseASLG.OnEvent("Click", ArmorSwapGuiUseLightning)
 MHotkey_ASPressKeyElemLightning := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemLightningHotkey", ASV.HotKey[3])
 MHotkey_ASPressKeyElemLightning.OnEvent("Change", ASGC_ElemLightningPressKeyChanged)
 MText_ASTypeInputElemLightning := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemLightningText", ASV.TypeText[3])
 MText_ASTypeInputElemLightning.OnEvent("Change", ASGC_ElemLightningTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "GROUND")
+MButton_UseASG := Menu_Gui.Add("Button", "YP-4 XP56", "Use AS")
+MButton_UseASG.OnEvent("Click", ArmorSwapGuiUseGround)
 MHotkey_ASPressKeyElemGround := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemGroundHotkey", ASV.HotKey[4])
 MHotkey_ASPressKeyElemGround.OnEvent("Change", ASGC_ElemGroundPressKeyChanged)
 MText_ASTypeInputElemGround := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemGroundText", ASV.TypeText[4])
 MText_ASTypeInputElemGround.OnEvent("Change", ASGC_ElemGroundTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "DARK")
+MButton_UseASD := Menu_Gui.Add("Button", "YP-4 XP56", "Use AS")
+MButton_UseASD.OnEvent("Click", ArmorSwapGuiUseDark)
 MHotkey_ASPressKeyElemDark := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemDarkHotkey", ASV.HotKey[5])
 MHotkey_ASPressKeyElemDark.OnEvent("Change", ASGC_ElemDarkPressKeyChanged)
 MText_ASTypeInputElemDark := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemDarkText", ASV.TypeText[5])
 MText_ASTypeInputElemDark.OnEvent("Change", ASGC_ElemDarkTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "LIGHT")
+MButton_UseASLT := Menu_Gui.Add("Button", "YP-4 XP56", "Use AS")
+MButton_UseASLT.OnEvent("Click", ArmorSwapGuiUseLight)
 MHotkey_ASPressKeyElemLight := Menu_Gui.Add("Hotkey", "YS20 XS w110 vASPressKeyElemLightHotkey", ASV.HotKey[6])
 MHotkey_ASPressKeyElemLight.OnEvent("Change", ASGC_ElemLightPressKeyChanged)
 MText_ASTypeInputElemLight := Menu_Gui.Add("Edit", "YS20 XS w110 vASTypeInputElemLightText", ASV.TypeText[6])
@@ -483,7 +589,7 @@ ASGC_PressKeyInputModeChanged(*)
     }
 }
 
-MTab_Settings.UseTab(6)
+MTab_Settings.UseTab(7)
 Menu_Gui.Add("Text", , "Detect Variation 0-255")
 Menu_Gui.Add("Edit", "w50").OnEvent("Change", ASGC_DetectionVariationChanged)
 MUpDown_ASDTVARTN := Menu_Gui.Add("UpDown", "vASHPDetectionVariationUpDown Range0-255", ASV.DetectionVariation)
@@ -602,9 +708,7 @@ MUpDown_ASColorBElemLight.OnEvent("Change", ASGC_BlueCompElemLightChanged)
 
 
 
-
-
-MTab_Settings.UseTab(7)
+MTab_Settings.UseTab(8)
 MButton_ShowWC := Menu_Gui.Add("Button", "", "Hide WC")
 MButton_ShowWC.OnEvent("Click", WeaponChangeAllowMoveWindow)
 
@@ -634,36 +738,48 @@ MUpDown_WCVert.OnEvent("Change", WCGC_VertChanged)
 MUpDown_WCHorz := Menu_Gui.Add("UpDown", "Y+6 XS35 W45 vWCVHorzUpDown Horz Range-1-1", 0)
 MUpDown_WCHorz.OnEvent("Change", WCGC_HorzChanged)
 
-MTab_Settings.UseTab(8)
+MTab_Settings.UseTab(9)
 Menu_Gui.Add("Text", , "Input Mode")
 MDDList_WCPressKeyInputMode := Menu_Gui.Add("DropDownList", "w75 Choose" . WCV.InputMode, ["HotKey","TypeText"])
 MDDList_WCPressKeyInputMode.OnEvent("Change", WCGC_PressKeyInputModeChanged)
 Menu_Gui.Add("Text", "Section", "FIRE")
+MButton_UseWCF := Menu_Gui.Add("Button", "YP-4 XP56", "Use WC")
+MButton_UseWCF.OnEvent("Click", WeaponChangeGuiUseFire)
 MHotkey_WCPressKeyElemFire := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemFireHotkey", WCV.HotKey[1])
 MHotkey_WCPressKeyElemFire.OnEvent("Change", WCGC_ElemFirePressKeyChanged)
 MText_WCTypeInputElemFire := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemFireText", WCV.TypeText[1])
 MText_WCTypeInputElemFire.OnEvent("Change", WCGC_ElemFireTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "ICE")
+MButton_UseWCI := Menu_Gui.Add("Button", "YP-4 XP56", "Use WC")
+MButton_UseWCI.OnEvent("Click", WeaponChangeGuiUseIce)
 MHotkey_WCPressKeyElemIce := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemIceHotkey", WCV.HotKey[2])
 MHotkey_WCPressKeyElemIce.OnEvent("Change", WCGC_ElemIcePressKeyChanged)
 MText_WCTypeInputElemIce := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemIceText", WCV.TypeText[2])
 MText_WCTypeInputElemIce.OnEvent("Change", WCGC_ElemIceTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "LIGHTNING")
+MButton_UseWCLG := Menu_Gui.Add("Button", "YP-4 XP56", "Use WC")
+MButton_UseWCLG.OnEvent("Click", WeaponChangeGuiUseLightning)
 MHotkey_WCPressKeyElemLightning := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemLightningHotkey", WCV.HotKey[3])
 MHotkey_WCPressKeyElemLightning.OnEvent("Change", WCGC_ElemLightningPressKeyChanged)
 MText_WCTypeInputElemLightning := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemLightningText", WCV.TypeText[3])
 MText_WCTypeInputElemLightning.OnEvent("Change", WCGC_ElemLightningTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "GROUND")
+MButton_UseWCG := Menu_Gui.Add("Button", "YP-4 XP56", "Use WC")
+MButton_UseWCG.OnEvent("Click", WeaponChangeGuiUseGround)
 MHotkey_WCPressKeyElemGround := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemGroundHotkey", WCV.HotKey[4])
 MHotkey_WCPressKeyElemGround.OnEvent("Change", WCGC_ElemGroundPressKeyChanged)
 MText_WCTypeInputElemGround := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemGroundText", WCV.TypeText[4])
 MText_WCTypeInputElemGround.OnEvent("Change", WCGC_ElemGroundTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "DARK")
+MButton_UseWCD := Menu_Gui.Add("Button", "YP-4 XP56", "Use WC")
+MButton_UseWCD.OnEvent("Click", WeaponChangeGuiUseDark)
 MHotkey_WCPressKeyElemDark := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemDarkHotkey", WCV.HotKey[5])
 MHotkey_WCPressKeyElemDark.OnEvent("Change", WCGC_ElemDarkPressKeyChanged)
 MText_WCTypeInputElemDark := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemDarkText", WCV.TypeText[5])
 MText_WCTypeInputElemDark.OnEvent("Change", WCGC_ElemDarkTypeInputChanged)
 Menu_Gui.Add("Text", "Section", "LIGHT")
+MButton_UseWCLT := Menu_Gui.Add("Button", "YP-4 XP56", "Use WC")
+MButton_UseWCLT.OnEvent("Click", WeaponChangeGuiUseLight)
 MHotkey_WCPressKeyElemLight := Menu_Gui.Add("Hotkey", "YS20 XS w110 vWCPressKeyElemLightHotkey", WCV.HotKey[6])
 MHotkey_WCPressKeyElemLight.OnEvent("Change", WCGC_ElemLightPressKeyChanged)
 MText_WCTypeInputElemLight := Menu_Gui.Add("Edit", "YS20 XS w110 vWCTypeInputElemLightText", WCV.TypeText[6])
@@ -709,7 +825,7 @@ WCGC_PressKeyInputModeChanged(*)
     }
 }
 
-MTab_Settings.UseTab(9)
+MTab_Settings.UseTab(10)
 Menu_Gui.Add("Text", , "Detect Variation 0-255")
 Menu_Gui.Add("Edit", "w50").OnEvent("Change", WCGC_DetectionVariationChanged)
 MUpDown_WCDTVARTN := Menu_Gui.Add("UpDown", "vWCHPDetectionVariationUpDown Range0-255", WCV.DetectionVariation)
@@ -831,7 +947,7 @@ MUpDown_WCColorBElemLight.OnEvent("Change", WCGC_BlueCompElemLightChanged)
 
 
 MTab_Settings.UseTab(0)
-Menu_Gui.Show("W155 H560")
+Menu_Gui.Show("W155 H580")
 
 
 
@@ -858,6 +974,14 @@ THG.GUI.OnEvent("Size", GUI_Resize )
 THG.GUI.Show("W" . THG.W . " H" . THG.H)
 THG.GUI.Move( THG.XW, THG.YW )
 WinSetTransColor(THG.GUI.BackColor , THG.GUI.Hwnd)
+
+; ; Create custom gui to represent where ahk is detecting pixels for auto Megistaride (buffing) 
+MBG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "MB")
+MBG.GUI.BackColor := "EEAA99"  ; Can be any RGB color (it will be made transparent below).
+MBG.GUI.OnEvent("Size", GUI_Resize )
+MBG.GUI.Show("W" . MBG.W . " H" . MBG.H)
+MBG.GUI.Move( MBG.XW, MBG.YW )
+WinSetTransColor(MBG.GUI.BackColor , MBG.GUI.Hwnd)
 
 ; ; Create custom gui for enemy element type detection to armor swap
 ASG.GUI := Gui("+AlwaysOnTop +MinSize5x1 +MaxSize900x10 +Resize +ToolWindow -MaximizeBox -MinimizeBox -SysMenu +Caption -DPIScale", "AS")
@@ -917,6 +1041,19 @@ GUI_Resize(GuiObj, MinMax, Width, Height)
             THG.MY := THG.Y + THG.H
         }
     }
+    Else If (MBG.GUI = GuiObj)
+    {
+        If (MBG.SkipGuiResize = 0)
+        {
+            MBG.GUI.GetClientPos(&X, &Y, &W, &H)
+            MBG.X := X
+            MBG.Y := Y
+            MBG.W := W
+            MBG.H := H
+            MBG.MX := MBG.X + MBG.W
+            MBG.MY := MBG.Y + MBG.H
+        }
+    }
     Else If (ASG.GUI = GuiObj)
     {
         If (ASG.SkipGuiResize = 0)
@@ -971,6 +1108,10 @@ GuiRepositionedHook(wParam, lParam, msg, hwnd)
     {
         GUI_Resize(THG.GUI, 0, 0, 0)
     }
+    Else If ( hwnd = MBG.GUI.Hwnd )
+    {
+        GUI_Resize(MBG.GUI, 0, 0, 0)
+    }
     Else If ( hwnd = ASG.GUI.Hwnd )
     {
         GUI_Resize(ASG.GUI, 0, 0, 0)
@@ -986,21 +1127,19 @@ GuiRepositionedHook(wParam, lParam, msg, hwnd)
 GUI_Resize(JAG.GUI, 0, 0, 0)
 GUI_Resize(PCG.GUI, 0, 0, 0)
 GUI_Resize(THG.GUI, 0, 0, 0)
+GUI_Resize(MBG.GUI, 0, 0, 0)
 GUI_Resize(ASG.GUI, 0, 0, 0)
 GUI_Resize(WCG.GUI, 0, 0, 0)
 
 JAGC_EvalWindowHidden
 PCGC_EvalWindowHidden
 THGC_EvalWindowHidden
+MBGC_EvalWindowHidden
 WeaponChangeEvalWindowHidden
 ArmorSwapEvalWindowHidden
 
 ; Auto Just Attack
-
-if (JAV.Enabled = true)
-{
-    SetTimer JAV_Loop, JAV.Freq
-}
+SetTimer JAV_Loop, JAV.Freq
 JAV_Loop()
 {
     global
@@ -1009,7 +1148,9 @@ JAV_Loop()
     {
         MProgress_JA.Value := Max(Min(Round(JAV.Count / JAV.Thresh * 100), 100),0)
         JAV.Count := JAV.Count + 1
-    } Else {
+    }
+    Else
+    {
         If (JAV.Count > 0)
         {
             MStatusBar_MainStatus.SetText( "Time Green" . JAV.Count ,, 0 )
@@ -1024,32 +1165,18 @@ JAV_Loop()
             MProgress_JA.Value := 0
         }
     }
-    If (JAV.Count >= JAV.Thresh)
+    If (JAV.Count >= JAV.Thresh && JAV.Enabled = true)
     {
         MProgress_JA.Opt("+c0x00FF00")
         MProgress_JA.Value := 100
-        if (UseInputLockout != true)
-        {
-            UseInputLockout := true
-            Sleep JAV.Delay
-            MStatusBar_MainStatus.SetText( "Just Attack!" ,, 0 )
-            if (WinActive(PSUWinTitle)) 
-            {
-                Send "{Right}{Right}{Right}"
-            }
-            JAV.Count := 0
-            UseInputLockout := false
-        }
+        JustAttackUse()
     }
     return True
 }
 
 
 ; Auto Photon Charge
-if (PCV.Enabled = true)
-{
-    SetTimer PCV_Loop, PCV.Freq
-}
+SetTimer PCV_Loop, PCV.Freq
 PCV_Loop()
 {
     global
@@ -1071,7 +1198,7 @@ PCV_Loop()
         PCG.GUI.Title := "PC"
     }
 ;MStatusBar_MainStatus.SetText( "Pixel Search" PCV.Count " " PCG.X ":" PCG.Y " " PCG.W ":" PCG.H " FOUND:" PC_Px ":" PC_Py " " PCV.BarPercent ,, 0)
-    If (PCV.Count >= PCV.TrigThresh)
+    If (PCV.Count >= PCV.TrigThresh && PCV.Enabled = true)
     {
         PhotonChargeUse()
     }
@@ -1080,10 +1207,7 @@ PCV_Loop()
 
 
 ; Auto Trimate Heal
-if (THV.Enabled = true)
-{
-    SetTimer THV_Loop, THV.Freq
-}
+SetTimer THV_Loop, THV.Freq
 THV_Loop()
 {
     global
@@ -1118,19 +1242,122 @@ THV_Loop()
         }
     }
 ;MStatusBar_MainStatus.SetText( "Pixel Search" THV.Count " " THG.X ":" THG.Y " " THG.W ":" THG.H " FOUND:" TH_Px ":" TH_Py " " THV.BarPercent ,, 0)
-    If (THV.Count >= THV.TrigThresh)
+    If (THV.Count >= THV.TrigThresh && THV.Enabled = true)
     {
         TrimateHealUse()
     }
     return True
 }
 
+; Auto Megistaride Buff
+SetTimer MBV_Loop, MBV.Freq
+MBV_Loop()
+{
+    global
+    local MBShiftaThresh := false
+    local MBDebandThresh := false
+    local MBZodialThresh := false
+    local MBRetierThresh := false
+
+        If ( PixelSearch(&MB_Px, &MB_Py, MBG.MX, MBG.MY, MBG.X, MBG.Y, MBV.ShiftaColor ) ) ; red color.
+        {
+            MBV.ShiftaCount := 0
+            MProgress_MBCS.Opt("+c0x" . Format("{:X}", MBV.ShiftaColor))
+        } 
+        Else
+        {
+            MBV.ShiftaCount := MBV.ShiftaCount + 1
+            MProgress_MBCS.Opt("+c0x666666")
+        }
+
+        If ( PixelSearch(&MB_Px, &MB_Py, MBG.MX, MBG.MY, MBG.X, MBG.Y, MBV.DebandColor ) ) ; blue color.
+        {
+            MBV.DebandCount := 0
+            MProgress_MBCD.Opt("+c0x" . Format("{:X}", MBV.DebandColor))
+        }
+        Else
+        {
+            MBV.DebandCount := MBV.DebandCount + 1
+            MProgress_MBCD.Opt("+c0x666666")
+        }
+
+        If ( PixelSearch(&MB_Px, &MB_Py, MBG.MX, MBG.MY, MBG.X, MBG.Y, MBV.ZodialColor ) ) ; yellow color.
+        {
+            MBV.ZodialCount := 0
+            MProgress_MBCZ.Opt("+c0x" . Format("{:X}", MBV.ZodialColor))
+        }
+        Else
+        {
+            MBV.ZodialCount := MBV.ZodialCount + 1
+            MProgress_MBCZ.Opt("+c0x666666")
+        }
+
+        If ( PixelSearch(&MB_Px, &MB_Py, MBG.MX, MBG.MY, MBG.X, MBG.Y, MBV.RetierColor ) ) ; beige/offwhite color.
+        {
+            MBV.RetierCount := 0
+            MProgress_MBCR.Opt("+c0x" . Format("{:X}", MBV.RetierColor))
+        }
+        Else
+        {
+            MBV.RetierCount := MBV.RetierCount + 1
+            MProgress_MBCR.Opt("+c0x666666")
+        }
+    ; If ()
+    ; {
+
+    ; }
+    ; Else
+    ; {
+    ;     MBV.ShiftaCount := 0
+    ;     MBV.DebandCount := 0
+    ;     MBV.ZodialCount := 0
+    ;     MBV.RetierCount := 0
+    ;     MProgress_MBCS.Opt("+c0x666666")
+    ;     MProgress_MBCD.Opt("+c0x666666")
+    ;     MProgress_MBCZ.Opt("+c0x666666")
+    ;     MProgress_MBCR.Opt("+c0x666666")
+    ; }
+
+
+    ;MStatusBar_MainStatus.SetText( "Pixel Search" MBV.Count " " MBG.X ":" MBG.Y " " MBG.W ":" MBG.H " FOUND:" MB_Px ":" MB_Py " " MBV.BarPercent ,, 0)
+    If (MBV.ShiftaCount >= MBV.TrigThresh)
+    {
+        MBShiftaThresh := true
+    }
+    If (MBV.DebandCount >= MBV.TrigThresh)
+    {
+        MBDebandThresh := true
+    }
+    If (MBV.ZodialCount >= MBV.TrigThresh)
+    {
+        MBZodialThresh := true
+    }
+    If (MBV.RetierCount >= MBV.TrigThresh)
+    {
+        MBRetierThresh := true
+    }
+    If (MBShiftaThresh = true && MBDebandThresh = true && MBZodialThresh = true && MBRetierThresh = true && MBV.Enabled = true && WCV.Count > 0)
+    {
+        MegistarideBuffUse()
+    }
+    If (MBV.ShiftaCount = 0 && MBV.DebandCount = 0 && MBV.ZodialCount = 0 && MBV.RetierCount = 0)
+    {
+        MProgress_MB.Opt("+c0x4b006c")
+        MProgress_MB.Value := 100
+        MBG.GUI.Title := "MB Active"
+    }
+    Else 
+    {
+        MProgress_MB.Opt("+c0x666666")
+        MProgress_MB.Value := Max(Min(Round(MBV.ShiftaCount / MBV.TrigThresh * 25 + MBV.DebandCount / MBV.TrigThresh * 25 + MBV.ZodialCount / MBV.TrigThresh * 25 + MBV.RetierCount / MBV.TrigThresh * 25), 100),0)
+        MBG.GUI.Title := "MB " . MProgress_MB.Value . "/100"
+    }
+    return True
+}
+
 
 ; Auto Armor Swap
-if (ASV.Enabled = true)
-{
-    SetTimer ASV_Loop, ASV.Freq
-}
+SetTimer ASV_Loop, ASV.Freq
 ASV_Loop()
 {
     global
@@ -1165,9 +1392,9 @@ ASV_Loop()
         ASV.DetectionState := 0
     }
 ; MStatusBar_MainStatus.SetText( "Pixel Search" ASV.Count " " ASG.X ":" ASG.Y " " ASG.W ":" ASG.H " FOUND:" AS_Px ":" AS_Py " " ASV.ElemType ,, 0)
-    If (ASV.Count >= ASV.TrigThresh)
+    If (ASV.Count >= ASV.TrigThresh && ASV.Enabled = true)
     {
-        ArmorSwapUse()
+        ArmorSwapUse(false,-1)
     }
     return True
 }
@@ -1196,10 +1423,7 @@ ASV_ColorEval( ColorIdx )
 }
 
 ; Auto Weapon Change
-if (WCV.Enabled = true)
-{
-    SetTimer WCV_Loop, WCV.Freq
-}
+SetTimer WCV_Loop, WCV.Freq
 WCV_Loop()
 {
     global
@@ -1234,9 +1458,9 @@ WCV_Loop()
         WCV.DetectionState := 0
     }
 ; MStatusBar_MainStatus.SetText( "Pixel Search" WCV.Count " " WCG.X ":" WCG.Y " " WCG.W ":" WCG.H " FOUND:" WC_Px ":" WC_Py " " WCV.ElemType ,, 0)
-    If (WCV.Count >= WCV.TrigThresh)
+    If (WCV.Count >= WCV.TrigThresh && WCV.Enabled = true)
     {
-        WeaponChangeUse()
+        WeaponChangeUse(false, -1)
     }
     return True
 }
@@ -1265,6 +1489,22 @@ WCV_ColorEval( ColorIdx )
 }
 
 
+JustAttackUse(*)
+{
+    global
+    if (UseInputLockout != true)
+    {
+        UseInputLockout := true
+        Sleep JAV.Delay
+        MStatusBar_MainStatus.SetText( "Just Attack!" ,, 0 )
+        if (WinActive(PSUWinTitle)) 
+        {
+            Send JAV.PressKey
+        }
+        JAV.Count := 0
+        UseInputLockout := false
+    }
+}
 PhotonChargeUse(*)
 {
     global
@@ -1297,10 +1537,35 @@ TrimateHealUse(*)
         UseInputLockout := false
     }
 }
-ArmorSwapUse(*)
+MegistarideBuffUse(*)
 {
     global
-    if (ASV.LastElemType != ASV.ElemType && ASV.CanChange = 1 && UseInputLockout != true)
+    if (UseInputLockout != true && MBV.CanChange = 1)
+    {
+        UseInputLockout := true
+        Sleep MBV.Delay
+        MStatusBar_MainStatus.SetText( "Megistaride Buff!" ,, 0)
+        if (WinActive(PSUWinTitle)) 
+        {
+            Send MBV.PressKey
+        }
+        MBV.ShiftaCount := 0
+        MBV.DebandCount := 0
+        MBV.ZodialCount := 0
+        MBV.RetierCount := 0
+        MBV.CanChange := 0
+        SetTimer () => MBV.CanChange := 1, -MBV.DurationNextTry, 10001
+        UseInputLockout := false
+    }
+}
+ArmorSwapUse(ForceKeyPress, ElementNumber, *)
+{
+    global
+    local ASV_ElemType := ASV.ElemType ; copy variable due to bug with 'multithreading'.
+    if (ElementNumber > -1){
+        ASV_ElemType := ElementNumber
+    }
+    if ((ASV.LastElemType != ASV_ElemType && ASV.CanChange = 1 && UseInputLockout != true) || ForceKeyPress = true)
     {
         Sleep ASV.Delay
         MStatusBar_MainStatus.SetText( "Armor Swap!" ,, 0)
@@ -1309,29 +1574,29 @@ ArmorSwapUse(*)
         local ArmorSwapPressInputted := false
         If (ASV.InputMode = 1)
         {
-            ArmorSwapPressInput := ASV.PressKey[ASV.ElemType]
+            ArmorSwapPressInput := ASV.PressKey[ASV_ElemType]
             if (WinActive(PSUWinTitle)) 
             {
                 Send ArmorSwapPressInput
             }
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[ASV.ElemType]))
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[ASV_ElemType]))
             ArmorSwapPressInputted := true
         }
         Else If (ASV.InputMode = 2)
         {
-            ArmorSwapPressInput := ASV.TypeText[ASV.ElemType]
+            ArmorSwapPressInput := ASV.TypeText[ASV_ElemType]
             if (WinActive(PSUWinTitle)) 
             {
                 Send "{Space}"
                 Send "{Text}" . ArmorSwapPressInput
                 Send "{Enter}{Enter}{Enter}"
             }
-            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[ASV.ElemType]))
+            MProgress_ASC.Opt("+c0x" . Format("{:X}", ASV.Color[ASV_ElemType]))
             ArmorSwapPressInputted := true
         }
         If (ArmorSwapPressInputted = true)
         {
-            ASV.LastElemType := ASV.ElemType
+            ASV.LastElemType := ASV_ElemType
             MProgress_AS.Value := 100
             ASV.CanChange := 0
             SetTimer () => ASV.CanChange := 1, -ASV.DurationBeforeNextChange, 10001
@@ -1340,11 +1605,14 @@ ArmorSwapUse(*)
         UseInputLockout := false
     }
 }
-WeaponChangeUse(*)
+WeaponChangeUse(ForceKeyPress, ElementNumber, *)
 {
     global
     local ASV_ElemType := ASV.ElemType ; copy variable due to bug with 'multithreading'. There is a small chance the elemtype is 0 after we just checked it...
-    if (ASV_ElemType != 0 && WCV.ElemType != WCV.ColorOppositeLookup[ASV_ElemType] && WCV.CanChange = 1 && UseInputLockout != true)
+    if (ElementNumber > -1){
+        ASV_ElemType := ElementNumber
+    }
+    if ((ASV_ElemType != 0 && WCV.ElemType != WCV.ColorOppositeLookup[ASV_ElemType] && WCV.CanChange = 1 && UseInputLockout != true) || ForceKeyPress = true)
     {
         Sleep WCV.Delay
         MStatusBar_MainStatus.SetText( "Weapon Change!" ,, 0)
@@ -1383,6 +1651,70 @@ WeaponChangeUse(*)
         UseInputLockout := false
     }
 }
+JustAttackGuiUse(*)
+{
+    SetTimer JustAttackUse, -1000, 9000
+}
+PhotonChargeGuiUse(*)
+{
+    SetTimer PhotonChargeUse, -1000, 9000
+}
+TrimateHealGuiUse(*)
+{
+    SetTimer TrimateHealUse, -1000, 9000
+}
+MegistarideBuffGuiUse(*)
+{
+    SetTimer MegistarideBuffUse, -1000, 9000
+}
+ArmorSwapGuiUseFire(*)
+{
+    SetTimer () => ArmorSwapUse(true, ASV.ColorLookup["Fire"]), -1000, 9000
+}
+ArmorSwapGuiUseIce(*)
+{
+    SetTimer () => ArmorSwapUse(true, ASV.ColorLookup["Ice"]), -1000, 9000
+}
+ArmorSwapGuiUseLightning(*)
+{
+    SetTimer () => ArmorSwapUse(true, ASV.ColorLookup["Lightning"]), -1000, 9000
+}
+ArmorSwapGuiUseGround(*)
+{
+    SetTimer () => ArmorSwapUse(true, ASV.ColorLookup["Ground"]), -1000, 9000
+}
+ArmorSwapGuiUseDark(*)
+{
+    SetTimer () => ArmorSwapUse(true, ASV.ColorLookup["Dark"]), -1000, 9000
+}
+ArmorSwapGuiUseLight(*)
+{
+    SetTimer () => ArmorSwapUse(true, ASV.ColorLookup["Light"]), -1000, 9000
+}
+WeaponChangeGuiUseFire(*)
+{
+    SetTimer () => WeaponChangeUse(true, WCV.ColorLookup["Fire"]), -1000, 9000
+}
+WeaponChangeGuiUseIce(*)
+{
+    SetTimer () => WeaponChangeUse(true, WCV.ColorLookup["Ice"]), -1000, 9000
+}
+WeaponChangeGuiUseLightning(*)
+{
+    SetTimer () => WeaponChangeUse(true, WCV.ColorLookup["Lightning"]), -1000, 9000
+}
+WeaponChangeGuiUseGround(*)
+{
+    SetTimer () => WeaponChangeUse(true, WCV.ColorLookup["Ground"]), -1000, 9000
+}
+WeaponChangeGuiUseDark(*)
+{
+    SetTimer () => WeaponChangeUse(true, WCV.ColorLookup["Dark"]), -1000, 9000
+}
+WeaponChangeGuiUseLight(*)
+{
+    SetTimer () => WeaponChangeUse(true, WCV.ColorLookup["Light"]), -1000, 9000
+}
 
 
 StartPSU(*)
@@ -1415,13 +1747,11 @@ JAE_ToggleFeatureEnabled(*)
     global
     if (MCheckBox_JAE.Value = 0)
     {
-        SetTimer JAV_Loop, 0
         JAV.Enabled := false
         MStatusBar_MainStatus.SetText( "JA Disabled!" ,, 0)
     }
     Else
     {
-        SetTimer JAV_Loop, JAV.Freq
         JAV.Enabled := true
         MStatusBar_MainStatus.SetText( "JA Enabled!" ,, 0)
     }
@@ -1431,13 +1761,11 @@ PCE_ToggleFeatureEnabled(*)
     global
     if (MCheckBox_PCE.Value = 0)
     {
-        SetTimer PCV_Loop, 0
         PCV.Enabled := false
         MStatusBar_MainStatus.SetText( "PC Disabled!" ,, 0)
     }
     Else
     {
-        SetTimer PCV_Loop, PCV.Freq
         PCV.Enabled := true
         MStatusBar_MainStatus.SetText( "PC Enabled!" ,, 0)
     }
@@ -1447,15 +1775,27 @@ THE_ToggleFeatureEnabled(*)
     global
     if (MCheckBox_THE.Value = 0)
     {
-        SetTimer THV_Loop, 0
         THV.Enabled := false
         MStatusBar_MainStatus.SetText( "TH Disabled!" ,, 0)
     }
     Else
     {
-        SetTimer THV_Loop, THV.Freq
         THV.Enabled := true
         MStatusBar_MainStatus.SetText( "TH Enabled!" ,, 0)
+    }
+}
+MBE_ToggleFeatureEnabled(*)
+{
+    global
+    if (MCheckBox_MBE.Value = 0)
+    {
+        MBV.Enabled := false
+        MStatusBar_MainStatus.SetText( "MB Disabled!" ,, 0)
+    }
+    Else
+    {
+        MBV.Enabled := true
+        MStatusBar_MainStatus.SetText( "MB Enabled!" ,, 0)
     }
 }
 ASE_ToggleFeatureEnabled(*)
@@ -1463,13 +1803,11 @@ ASE_ToggleFeatureEnabled(*)
     global
     if (MCheckBox_ASE.Value = 0)
     {
-        SetTimer ASV_Loop, 0
         ASV.Enabled := false
         MStatusBar_MainStatus.SetText( "AS Disabled!" ,, 0)
     }
     Else
     {
-        SetTimer ASV_Loop, ASV.Freq
         ASV.Enabled := true
         MStatusBar_MainStatus.SetText( "AS Enabled!" ,, 0)
     }
@@ -1479,13 +1817,11 @@ WCE_ToggleFeatureEnabled(*)
     global
     if (MCheckBox_WCE.Value = 0)
     {
-        SetTimer WCV_Loop, 0
         WCV.Enabled := false
         MStatusBar_MainStatus.SetText( "WC Disabled!" ,, 0)
     }
     Else
     {
-        SetTimer WCV_Loop, WCV.Freq
         WCV.Enabled := true
         MStatusBar_MainStatus.SetText( "WC Enabled!" ,, 0)
     }
@@ -1582,6 +1918,36 @@ THGC_EvalWindowHidden()
     }
 }
 
+MBGC_AllowMoveWindow(*)
+{
+    global
+    if (MBG.WindowCanMove = 0)
+    {
+        MBG.WindowCanMove := 1
+    }
+    Else
+    {
+        MBG.WindowCanMove := 0
+    }
+    MBGC_EvalWindowHidden
+}
+MBGC_EvalWindowHidden()
+{
+    global
+    if (MBG.WindowCanMove = 0)
+    {
+        MBG.SkipGuiResize := 1
+        MBG.GUI.Opt("+AlwaysOnTop -Caption -Resize")
+        MButton_ShowMB.Text := "Show MB"
+    }
+    Else
+    {
+        MBG.SkipGuiResize := 0
+        MBG.GUI.Opt("+AlwaysOnTop +Caption +Resize")
+        MButton_ShowMB.Text := "Hide MB"
+    }
+}
+
 ArmorSwapAllowMoveWindow(*)
 {
     global
@@ -1655,10 +2021,7 @@ JAGC_FreqChanged(*)
 {
     global
     JAV.Freq := MUpDown_JAFreq.Value
-    if (JAV.Enabled = true)
-    {
-        SetTimer JAV_Loop, JAV.Freq
-    }
+    SetTimer JAV_Loop, JAV.Freq
 }
 JAGC_ThreshChanged(*)
 {
@@ -1716,10 +2079,7 @@ PCGC_FreqChanged(*)
 {
     global
     PCV.Freq := MUpDown_PCFreq.Value
-    if (PCV.Enabled = true)
-    {
-        SetTimer PCV_Loop, PCV.Freq
-    }
+    SetTimer PCV_Loop, PCV.Freq
 }
 PCGC_TrigThreshChanged(*)
 {
@@ -1782,10 +2142,7 @@ THGC_FreqChanged(*)
 {
     global
     THV.Freq := MUpDown_THFreq.Value
-    if (THV.Enabled = true)
-    {
-        SetTimer THV_Loop, THV.Freq
-    }
+    SetTimer THV_Loop, THV.Freq
 }
 THGC_TrigThreshChanged(*)
 {
@@ -1836,14 +2193,75 @@ THGC_HorzChanged(*)
 }
 
 
+MBGC_PressKeyChanged(*)
+{
+    global
+    If (StrLen(MHotkey_MBPressKey.Value) > 0)
+    {
+        MBV.HotKey :=   MHotkey_MBPressKey.Value
+        MBV.PressKey := ConvertHotKeyToKeyPress(MHotkey_MBPressKey.Value)
+    }    
+}
+MBGC_FreqChanged(*)
+{
+    global
+    MBV.Freq := MUpDown_MBFreq.Value
+    SetTimer MBV_Loop, MBV.Freq
+}
+MBGC_TrigThreshChanged(*)
+{
+    global
+    MBV.TrigThresh := MUpDown_MBTrigThresh.Value
+}
+MBGC_DurationNextTryChanged(*)
+{
+    global
+    MBV.DurationNextTry := MUpDown_MBDurationNextTry.Value
+}
+MBGC_DelayChanged(*)
+{
+    global
+    MBV.Delay := MUpDown_MBDelay.Value
+}
+MBGC_VertChanged(*)
+{
+    global
+    local TempSkipGuiResize := MBG.SkipGuiResize
+    MBG.SkipGuiResize := 0
+    MBG.GUI.GetPos( &X, &Y )
+    If (MUpDown_MBVert.Value > 0)
+    {
+        Y := Y - 1
+    } Else If (MUpDown_MBVert.Value < 0) {
+        Y := Y + 1
+    }
+    MBG.GUI.Move( X, Y )
+    MUpDown_MBVert.Value := 0
+    MBG.SkipGuiResize := TempSkipGuiResize
+}
+MBGC_HorzChanged(*)
+{
+    global
+    local TempSkipGuiResize := MBG.SkipGuiResize
+    MBG.SkipGuiResize := 0
+    MBG.GUI.GetPos( &X, &Y )
+    If (MUpDown_MBHorz.Value > 0)
+    {
+        X := X + 1
+    } Else If (MUpDown_MBHorz.Value < 0) {
+        X := X - 1
+    }
+    MBG.GUI.Move( X, Y )
+    MUpDown_MBHorz.Value := 0
+    MBG.SkipGuiResize := TempSkipGuiResize
+}
+
+
 ASGC_FreqChanged(*)
 {
     global
     ASV.Freq := MUpDown_ASFreq.Value
-    if (ASV.Enabled = true)
-    {
-        SetTimer ASV_Loop, ASV.Freq
-    }
+    SetTimer ASV_Loop, ASV.Freq
 }
 ASGC_TrigThreshChanged(*)
 {
@@ -2114,10 +2532,7 @@ WCGC_FreqChanged(*)
 {
     global
     WCV.Freq := MUpDown_WCFreq.Value
-    if (WCV.Enabled = true)
-    {
-        SetTimer WCV_Loop, WCV.Freq
-    }
+    SetTimer WCV_Loop, WCV.Freq
 }
 WCGC_TrigThreshChanged(*)
 {
@@ -2695,11 +3110,24 @@ LoadSettingsIni()
     THG.WindowCanMove       := IniRead( iniFilePath, "TH", "THG.WindowCanMove", THG.WindowCanMove )
     THV.Enabled             := IniRead( iniFilePath, "TH", "THV.Enabled", THV.Enabled )
     THV.Freq                := IniRead( iniFilePath, "TH", "THV.Freq", THV.Freq )
-    THV.HPThresh            := IniRead( iniFilePath, "TH", "THV.PPThresh", THV.HPThresh )
+    THV.HPThresh            := IniRead( iniFilePath, "TH", "THV.HPThresh", THV.HPThresh )
     THV.TrigThresh          := IniRead( iniFilePath, "TH", "THV.TrigThresh", THV.TrigThresh )
     THV.Delay               := IniRead( iniFilePath, "TH", "THV.Delay", THV.Delay )
     THV.Hotkey              := IniRead( iniFilePath, "TH", "THV.Hotkey", THV.HotKey )
     THV.PressKey            := ConvertHotKeyToKeyPress(THV.HotKey)
+
+    MBG.XW                  := IniRead( iniFilePath, "MB", "MBG.XW", MBG.XW )
+    MBG.YW                  := IniRead( iniFilePath, "MB", "MBG.YW", MBG.YW )
+    MBG.W                   := IniRead( iniFilePath, "MB", "MBG.W", MBG.W )
+    MBG.H                   := IniRead( iniFilePath, "MB", "MBG.H", MBG.H )
+    MBG.WindowCanMove       := IniRead( iniFilePath, "MB", "MBG.WindowCanMove", MBG.WindowCanMove )
+    MBV.Enabled             := IniRead( iniFilePath, "MB", "MBV.Enabled", MBV.Enabled )
+    MBV.Freq                := IniRead( iniFilePath, "MB", "MBV.Freq", MBV.Freq )
+    MBV.TrigThresh          := IniRead( iniFilePath, "MB", "MBV.TrigThresh", MBV.TrigThresh )
+    MBV.DurationNextTry     := IniRead( iniFilePath, "MB", "MBV.DurationNextTry", MBV.DurationNextTry )
+    MBV.Delay               := IniRead( iniFilePath, "MB", "MBV.Delay", MBV.Delay )
+    MBV.Hotkey              := IniRead( iniFilePath, "MB", "MBV.Hotkey", MBV.HotKey )
+    MBV.PressKey            := ConvertHotKeyToKeyPress(MBV.HotKey)
 
     ASG.XW                  := IniRead( iniFilePath, "AS", "ASG.XW", ASG.XW )
     ASG.YW                  := IniRead( iniFilePath, "AS", "ASG.YW", ASG.YW )
@@ -2806,6 +3234,19 @@ SaveSettingsIni(*)
     IniWrite  THV.Delay,            iniFilePath, "TH", "THV.Delay"
     IniWrite  THV.HotKey,           iniFilePath, "TH", "THV.HotKey"
     
+    MBG.GUI.GetPos( &X, &Y )
+    IniWrite  X,                    iniFilePath, "MB", "MBG.XW"
+    IniWrite  Y,                    iniFilePath, "MB", "MBG.YW"
+    IniWrite  MBG.W,                iniFilePath, "MB", "MBG.W"
+    IniWrite  MBG.H,                iniFilePath, "MB", "MBG.H"
+    IniWrite  MBG.WindowCanMove,    iniFilePath, "MB", "MBG.WindowCanMove"
+    IniWrite  MBV.Enabled,          iniFilePath, "MB", "MBV.Enabled"
+    IniWrite  MBV.Freq,             iniFilePath, "MB", "MBV.Freq"
+    IniWrite  MBV.TrigThresh,       iniFilePath, "MB", "MBV.TrigThresh"
+    IniWrite  MBV.DurationNextTry,  iniFilePath, "MB", "MBV.DurationNextTry"
+    IniWrite  MBV.Delay,            iniFilePath, "MB", "MBV.Delay"
+    IniWrite  MBV.HotKey,           iniFilePath, "MB", "MBV.HotKey"
+    
     ASG.GUI.GetPos( &X, &Y )
     IniWrite  X,                    iniFilePath, "AS", "ASG.XW"
     IniWrite  Y,                    iniFilePath, "AS", "ASG.YW"
@@ -2861,6 +3302,11 @@ SaveSettingsIni(*)
     IniWrite  WCV.TypeText[6],      iniFilePath, "WC", "WCV.TypeText." . WCV.ColorRevLookup[6]
 }
 
+
+ExitAssistant(*)
+{
+    ExitApp(0)
+}
 
 OnExit ExitFunc
 
